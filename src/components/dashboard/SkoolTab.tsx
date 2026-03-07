@@ -150,17 +150,7 @@ export function SkoolTab() {
             {upsertNotes.isPending ? "Saving..." : "Save CEO Notes"}
           </button>
         </div>
-        {existing && (existing.biggest_win || existing.biggest_bottleneck || existing.real_priority) && (
-          <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            {existing.biggest_win && <div className="bg-card/80 rounded-xl border-2 border-foreground/10 px-3 py-2"><span className="font-space text-[9px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground block mb-0.5">Win</span>{existing.biggest_win}</div>}
-            {existing.biggest_bottleneck && <div className="bg-card/80 rounded-xl border-2 border-foreground/10 px-3 py-2"><span className="font-space text-[9px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground block mb-0.5">Bottleneck</span>{existing.biggest_bottleneck}</div>}
-            {existing.real_priority && <div className="bg-card/80 rounded-xl border-2 border-foreground/10 px-3 py-2"><span className="font-space text-[9px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground block mb-0.5">Priority</span>{existing.real_priority}</div>}
-          </div>
-        )}
       </div>
-
-      {/* Signal Summary */}
-      <SignalSummary date={date} daily={daily} tasks={tasksForDate} />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

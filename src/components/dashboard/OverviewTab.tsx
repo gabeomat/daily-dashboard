@@ -69,6 +69,47 @@ export function OverviewTab() {
         <KpiCard label="Avg. CAC" value={totals.conversions > 0 ? fmtD(totals.spend / totals.conversions) : "—"} change="cost per new member" tilt={0.5} />
       </div>
 
+      {/* Strategic Snapshot */}
+      <div className="memphis-card relative overflow-hidden rounded-lg border-4 border-foreground p-5 memphis-shadow mb-6" style={{ background: "linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(219,234,254,.35) 100%)" }}>
+        <h3 className="font-fredoka text-lg font-bold tracking-tight mb-4 flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-primary border-2 border-foreground" />
+          Strategic Snapshot — <span className="text-primary">{formatReportingDate(latestDate)}</span>
+        </h3>
+
+        {/* CEO Notes Summary */}
+        {latestEntry && (latestEntry.biggest_win || latestEntry.biggest_bottleneck || latestEntry.real_priority) && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+            {latestEntry.biggest_win && (
+              <div className="bg-card/80 rounded-xl border-2 border-foreground/10 px-4 py-3">
+                <div className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                  <span>🏆</span> Biggest Win
+                </div>
+                <p className="text-sm leading-relaxed text-foreground">{latestEntry.biggest_win}</p>
+              </div>
+            )}
+            {latestEntry.biggest_bottleneck && (
+              <div className="bg-card/80 rounded-xl border-2 border-foreground/10 px-4 py-3">
+                <div className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                  <span>🧱</span> Bottleneck
+                </div>
+                <p className="text-sm leading-relaxed text-foreground">{latestEntry.biggest_bottleneck}</p>
+              </div>
+            )}
+            {latestEntry.real_priority && (
+              <div className="bg-card/80 rounded-xl border-2 border-foreground/10 px-4 py-3">
+                <div className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                  <span>🎯</span> Real Priority
+                </div>
+                <p className="text-sm leading-relaxed text-foreground">{latestEntry.real_priority}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Signal Summary (inline) */}
+        <SignalSummary date={latestDate} daily={daily} tasks={tasksForDate} />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <ChartCard title="MRR Trend">
           <ResponsiveContainer>
