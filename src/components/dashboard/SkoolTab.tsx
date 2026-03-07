@@ -15,10 +15,10 @@ const COLORS = { accent: "#eb1495", blue: "#00bfff", green: "#00ccb1", amber: "#
 
 export function SkoolTab() {
   const { data: daily = [] } = useDailyEntries();
-  const { data: tasksForDate = [] } = useTasksForDate(date);
   const upsert = useUpsertDailyEntry();
   const upsertNotes = useUpsertDailyEntry();
   const [date, setDate] = useState(yesterdayStr());
+  const { data: tasksForDate = [] } = useTasksForDate(date);
   const [form, setForm] = useState({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" });
   const [notesForm, setNotesForm] = useState({ biggest_win: "", biggest_bottleneck: "", real_priority: "" });
 
