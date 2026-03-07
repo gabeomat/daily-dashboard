@@ -14,8 +14,10 @@ const COLORS = { accent: "#eb1495", blue: "#00bfff", green: "#00ccb1", amber: "#
 export function SkoolTab() {
   const { data: daily = [] } = useDailyEntries();
   const upsert = useUpsertDailyEntry();
+  const upsertNotes = useUpsertDailyEntry();
   const [date, setDate] = useState(yesterdayStr());
   const [form, setForm] = useState({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" });
+  const [notesForm, setNotesForm] = useState({ biggest_win: "", biggest_bottleneck: "", real_priority: "" });
 
   const existing = daily.find((d) => d.date === date);
   const latest = daily[daily.length - 1];
@@ -39,6 +41,30 @@ export function SkoolTab() {
       onSuccess: () => {
         toast.success("Saved! Metrics logged for " + date);
         setForm({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" });
+      },
+    });
+  };
+
+  const handleSaveNotes = () => {
+    if (!date) { toast.error("Please select a date"); return; }
+    const base = existing || { mrr: 0, retention: 0, members: null, traffic: 0, discovery: 0, profile_activity: 0, group_activity: 0, one_thing: "" };
+    upsertNotes.mutate({
+      date,
+      mrr: base.mrr ?? 0,
+      retention: base.retention ?? 0,
+      members: base.members,
+      traffic: base.traffic ?? 0,
+      discovery: base.discovery ?? 0,
+      profile_activity: base.profile_activity ?? 0,
+      group_activity: base.group_activity ?? 0,
+      one_thing: base.one_thing ?? "",
+      biggest_win: notesForm.biggest_win,
+      biggest_bottleneck: notesForm.biggest_bottleneck,
+      real_priority: notesForm.real_priority,
+    }, {
+      onSuccess: () => {
+        toast.success("CEO Notes saved for " + formatReportingDate(date));
+        setNotesForm({ biggest_win: "", biggest_bottleneck: "", real_priority: "" });
       },
     });
   };
@@ -114,9 +140,14 @@ export function SkoolTab() {
           ].map((f) => (
             <div key={f.key} className="flex flex-col gap-1">
               <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700">{f.label}</label>
-              <input type="text" placeholder={f.placeholder} value={(form as any)[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground" />
+              <input type="text" placeholder={f.placeholder} value={(notesForm as any)[f.key]} onChange={(e) => setNotesForm({ ...notesForm, [f.key]: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground" />
             </div>
           ))}
+        </div>
+        <div className="flex gap-3 mt-3 items-center">
+          <button onClick={handleSaveNotes} disabled={upsertNotes.isPending} className="font-space font-extrabold uppercase tracking-[0.12em] text-sm px-4 py-2.5 bg-primary text-primary-foreground border-[3px] border-foreground rounded-full memphis-shadow-sm hover:bg-lav-500 transition-all cursor-pointer memphis-shadow-hover">
+            {upsertNotes.isPending ? "Saving..." : "Save CEO Notes"}
+          </button>
         </div>
         {existing && (existing.biggest_win || existing.biggest_bottleneck || existing.real_priority) && (
           <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
