@@ -48,7 +48,7 @@ export function buildWhatChanged(cur: DailyEntry | undefined, prev: DailyEntry |
   return changes.length > 0 ? changes.join(". ") + "." : "No significant day-over-day changes.";
 }
 
-function buildWhatLooksOff(
+export function buildWhatLooksOff(
   cur: DailyEntry | undefined,
   prev: DailyEntry | undefined,
   tasks: Task[],
