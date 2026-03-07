@@ -161,6 +161,9 @@ export function SkoolTab() {
         )}
       </div>
 
+      {/* Signal Summary */}
+      <SignalSummary date={date} daily={daily} tasks={tasksForDate} />
+
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <KpiCard label="Latest MRR" value={fmt(latest?.mrr || 0)} tilt={-0.5} />
