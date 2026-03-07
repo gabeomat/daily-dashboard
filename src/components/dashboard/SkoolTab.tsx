@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useDailyEntries, useUpsertDailyEntry } from "@/hooks/useDailyEntries";
 import { KpiCard } from "./KpiCard";
 import { ChartCard } from "./ChartCard";
-import { fmt, shortDate, todayStr } from "@/lib/helpers";
+import { fmt, shortDate, yesterdayStr, formatReportingDate } from "@/lib/helpers";
 import { toast } from "sonner";
 import {
   LineChart, Line, BarChart, Bar,
