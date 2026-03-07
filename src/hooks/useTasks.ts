@@ -93,10 +93,10 @@ export function useToggleTask() {
 export function useAddTask() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (task: { label: string; category: string; date: string }) => {
+    mutationFn: async (task: { label: string; category: string; date: string; weight?: number }) => {
       const { error } = await supabase
         .from("tasks")
-        .insert({ ...task, is_default: false, is_completed: false, sort_order: 99 });
+        .insert({ ...task, is_default: false, is_completed: false, sort_order: 99, weight: task.weight ?? 1 });
       if (error) throw error;
     },
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["tasks", v.date] }),
