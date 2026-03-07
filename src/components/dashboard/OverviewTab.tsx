@@ -31,6 +31,12 @@ export function OverviewTab() {
   const latestEntry = daily.find((d) => d.date === latestDate);
   const mrr = latest?.mrr || 0;
 
+  const prev = getPrev(daily, latestDate);
+  const recentEntries = daily.filter((d) => d.date <= latestDate).slice(-6);
+  const signalChanged = buildWhatChanged(latestEntry, prev);
+  const signalOff = buildWhatLooksOff(latestEntry, prev, tasksForDate, recentEntries);
+  const signalFocus = buildFocus(latestEntry, prev, tasksForDate);
+
   // Totals from ads
   const totals = metrics.reduce(
     (acc, d) => {
