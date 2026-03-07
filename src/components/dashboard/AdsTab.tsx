@@ -14,7 +14,7 @@ const COLORS = { accent: "#eb1495", blue: "#00bfff", green: "#00ccb1", amber: "#
 export function AdsTab() {
   const { data: metrics = [] } = useDailyMetrics();
   const upsert = useUpsertDailyMetric();
-  const [date, setDate] = useState(todayStr());
+  const [date, setDate] = useState(yesterdayStr());
   const [form, setForm] = useState({ ad_spend: "", t18: "0", t47: "0", t333: "0" });
   const [period, setPeriod] = useState("all");
 
