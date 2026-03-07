@@ -67,6 +67,7 @@ export function useSeedDefaultTasks() {
         is_default: true,
         is_completed: false,
         sort_order: i,
+        weight: t.weight,
       }));
       const { error } = await supabase.from("tasks").insert(rows);
       if (error) throw error;
