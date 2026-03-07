@@ -45,12 +45,33 @@ const SECTIONS: { key: keyof Insight; label: string; icon: React.ReactNode }[] =
 export function AiStrategistCard({ date, daily, tasks, signalChanged, signalOff, signalFocus }: Props) {
   const [insight, setInsight] = useState<Insight | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingSaved, setLoadingSaved] = useState(true);
 
   const cur = daily.find((d) => d.date === date);
 
   const weightedScore = tasks.reduce((s, t) => s + (t.is_completed ? t.weight : 0), 0);
   const totalWeight = tasks.reduce((s, t) => s + t.weight, 0);
   const taskPct = totalWeight > 0 ? Math.round((weightedScore / totalWeight) * 100) : 0;
+
+  // Load saved insight on mount / date change
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingSaved(true);
+    setInsight(null);
+    supabase
+      .from("ai_insights")
+      .select("response")
+      .eq("date", date)
+      .eq("module", "strategist")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data?.response) {
+          setInsight(data.response as unknown as Insight);
+        }
+        if (!cancelled) setLoadingSaved(false);
+      });
+    return () => { cancelled = true; };
+  }, [date]);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -85,7 +106,15 @@ export function AiStrategistCard({ date, daily, tasks, signalChanged, signalOff,
         toast.error(data.error);
         return;
       }
-      setInsight(data as Insight);
+
+      const result = data as Insight;
+      setInsight(result);
+
+      // Upsert into ai_insights
+      await supabase.from("ai_insights").upsert(
+        { date, module: "strategist", response: result as any },
+        { onConflict: "date,module" }
+      );
     } catch (e: any) {
       console.error("AI Strategist error:", e);
       toast.error(e?.message || "Failed to generate insight");
