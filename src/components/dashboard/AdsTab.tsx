@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useDailyMetrics, useUpsertDailyMetric } from "@/hooks/useDailyMetrics";
 import { KpiCard } from "./KpiCard";
 import { ChartCard } from "./ChartCard";
-import { fmt, fmtD, shortDate, enrichAd, buildWeekly, todayStr } from "@/lib/helpers";
+import { fmt, fmtD, shortDate, enrichAd, buildWeekly, yesterdayStr, formatReportingDate } from "@/lib/helpers";
 import { toast } from "sonner";
 import {
   LineChart, Line, BarChart, Bar,
@@ -14,7 +14,7 @@ const COLORS = { accent: "#eb1495", blue: "#00bfff", green: "#00ccb1", amber: "#
 export function AdsTab() {
   const { data: metrics = [] } = useDailyMetrics();
   const upsert = useUpsertDailyMetric();
-  const [date, setDate] = useState(todayStr());
+  const [date, setDate] = useState(yesterdayStr());
   const [form, setForm] = useState({ ad_spend: "", t18: "0", t47: "0", t333: "0" });
   const [period, setPeriod] = useState("all");
 
@@ -72,7 +72,7 @@ export function AdsTab() {
       <div className="memphis-card relative overflow-hidden rounded-lg border-4 border-foreground p-5 memphis-shadow mb-6" style={{ background: "linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(255,248,204,.5) 100%)" }}>
         <h3 className="font-fredoka text-[28px] font-bold tracking-tight mb-4 pt-3.5 flex items-center gap-2.5">
           <span className="w-3 h-3 rounded-full bg-primary border-2 border-foreground animate-pulse-dot" />
-          Log Today's Ad Metrics
+          Log Ad Metrics — <span className="text-primary">Reporting for {formatReportingDate(date)}</span>
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <div className="flex flex-col gap-1">

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useDailyEntries, useUpsertDailyEntry } from "@/hooks/useDailyEntries";
 import { KpiCard } from "./KpiCard";
 import { ChartCard } from "./ChartCard";
-import { fmt, shortDate, todayStr } from "@/lib/helpers";
+import { fmt, shortDate, yesterdayStr, formatReportingDate } from "@/lib/helpers";
 import { toast } from "sonner";
 import {
   LineChart, Line, BarChart, Bar,
@@ -14,7 +14,7 @@ const COLORS = { accent: "#eb1495", blue: "#00bfff", green: "#00ccb1", amber: "#
 export function SkoolTab() {
   const { data: daily = [] } = useDailyEntries();
   const upsert = useUpsertDailyEntry();
-  const [date, setDate] = useState(todayStr());
+  const [date, setDate] = useState(yesterdayStr());
   const [form, setForm] = useState({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "" });
 
   const existing = daily.find((d) => d.date === date);
@@ -71,7 +71,7 @@ export function SkoolTab() {
       <div className="memphis-card relative overflow-hidden rounded-lg border-4 border-foreground p-5 memphis-shadow mb-6" style={{ background: "linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(255,248,204,.5) 100%)" }}>
         <h3 className="font-fredoka text-[28px] font-bold tracking-tight mb-4 pt-3.5 flex items-center gap-2.5">
           <span className="w-3 h-3 rounded-full bg-primary border-2 border-foreground animate-pulse-dot" />
-          Log Today's Skool Metrics
+          Log Skool Metrics — <span className="text-primary">Reporting for {formatReportingDate(date)}</span>
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="flex flex-col gap-1">
