@@ -14,7 +14,7 @@ const COLORS = { accent: "#eb1495", blue: "#00bfff", green: "#00ccb1", amber: "#
 export function SkoolTab() {
   const { data: daily = [] } = useDailyEntries();
   const upsert = useUpsertDailyEntry();
-  const [date, setDate] = useState(todayStr());
+  const [date, setDate] = useState(yesterdayStr());
   const [form, setForm] = useState({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "" });
 
   const existing = daily.find((d) => d.date === date);
