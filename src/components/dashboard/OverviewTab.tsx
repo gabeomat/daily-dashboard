@@ -4,7 +4,8 @@ import { useTasksForDate } from "@/hooks/useTasks";
 import { GoalBar } from "./GoalBar";
 import { KpiCard } from "./KpiCard";
 import { ChartCard } from "./ChartCard";
-import { SignalSummary } from "./SignalSummary";
+import { SignalSummary, getPrev, buildWhatChanged, buildWhatLooksOff, buildFocus } from "./SignalSummary";
+import { AiStrategistCard } from "./AiStrategistCard";
 import { fmt, fmtD, shortDate, enrichAd, buildWeekly, yesterdayStr, formatReportingDate } from "@/lib/helpers";
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
