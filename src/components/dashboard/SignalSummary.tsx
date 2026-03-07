@@ -142,11 +142,8 @@ export function SignalSummary({ date, daily, tasks }: Props) {
   ];
 
   return (
-    <div className="memphis-card relative overflow-hidden rounded-lg border-4 border-foreground p-5 memphis-shadow mb-6" style={{ background: "linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(219,234,254,.35) 100%)" }}>
-      <h3 className="font-fredoka text-lg font-bold tracking-tight mb-3 flex items-center gap-2">
-        <span className="w-2.5 h-2.5 rounded-full bg-primary border-2 border-foreground" />
-        Signal Summary — <span className="text-primary">{formatReportingDate(date)}</span>
-      </h3>
+    <div>
+      <div className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground mb-2">Signal Summary</div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {signals.map((s) => (
           <div key={s.label} className="bg-card/80 rounded-xl border-2 border-foreground/10 px-4 py-3">
