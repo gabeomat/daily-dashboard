@@ -43,29 +43,6 @@ export function SkoolTab() {
     });
   };
 
-  const handleSaveNotes = () => {
-    if (!date) { toast.error("Please select a date"); return; }
-    const base = existing || { mrr: 0, retention: 0, members: null, traffic: 0, discovery: 0, profile_activity: 0, group_activity: 0, one_thing: "" };
-    upsertNotes.mutate({
-      date,
-      mrr: base.mrr ?? 0,
-      retention: base.retention ?? 0,
-      members: base.members,
-      traffic: base.traffic ?? 0,
-      discovery: base.discovery ?? 0,
-      profile_activity: base.profile_activity ?? 0,
-      group_activity: base.group_activity ?? 0,
-      one_thing: base.one_thing ?? "",
-      biggest_win: notesForm.biggest_win,
-      biggest_bottleneck: notesForm.biggest_bottleneck,
-      real_priority: notesForm.real_priority,
-    }, {
-      onSuccess: () => {
-        toast.success("CEO Notes saved for " + formatReportingDate(date));
-        setNotesForm({ biggest_win: "", biggest_bottleneck: "", real_priority: "" });
-      },
-    });
-  };
 
   const avg = (key: keyof typeof daily[0]) => {
     const vals = daily.map((d) => Number(d[key]) || 0);
