@@ -18,7 +18,7 @@ function pctChange(cur: number, prev: number): number {
   return Math.round(((cur - prev) / prev) * 100);
 }
 
-function buildWhatChanged(cur: DailyEntry | undefined, prev: DailyEntry | undefined): string {
+export function buildWhatChanged(cur: DailyEntry | undefined, prev: DailyEntry | undefined): string {
   if (!cur) return "No data logged for this date yet.";
   if (!prev) return "First entry — no prior day to compare.";
 
