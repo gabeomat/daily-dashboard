@@ -136,25 +136,36 @@ export function AiStrategistCard({ date, daily, tasks, signalChanged, signalOff,
           disabled={loading}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-foreground bg-primary text-primary-foreground font-space text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity disabled:opacity-50"
         >
-          {loading ? (
-            <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              Analyzing…
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-3.5 h-3.5" />
-              {insight ? "Refresh" : "Generate Insight"}
-            </>
-          )}
-        </button>
-      </div>
+           {loading ? (
+             <>
+               <Loader2 className="w-3.5 h-3.5 animate-spin" />
+               Analyzing…
+             </>
+           ) : insight ? (
+             <>
+               <RefreshCw className="w-3.5 h-3.5" />
+               Regenerate
+             </>
+           ) : (
+             <>
+               <Sparkles className="w-3.5 h-3.5" />
+               Generate Insight
+             </>
+           )}
+         </button>
+       </div>
 
-      {!insight && !loading && (
-        <p className="text-sm text-muted-foreground italic">
-          Click "Generate Insight" to get an AI-powered strategic analysis of your current data.
-        </p>
-      )}
+       {!insight && !loading && !loadingSaved && (
+         <p className="text-sm text-muted-foreground italic">
+           Click "Generate Insight" to get an AI-powered strategic analysis of your current data.
+         </p>
+       )}
+
+       {loadingSaved && !loading && (
+         <div className="flex items-center justify-center py-4">
+           <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+         </div>
+       )}
 
       {loading && (
         <div className="flex items-center justify-center py-8">
