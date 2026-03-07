@@ -1,9 +1,11 @@
 import { useDailyEntries } from "@/hooks/useDailyEntries";
 import { useDailyMetrics } from "@/hooks/useDailyMetrics";
+import { useTasksForDate } from "@/hooks/useTasks";
 import { GoalBar } from "./GoalBar";
 import { KpiCard } from "./KpiCard";
 import { ChartCard } from "./ChartCard";
-import { fmt, fmtD, shortDate, enrichAd, buildWeekly } from "@/lib/helpers";
+import { SignalSummary } from "./SignalSummary";
+import { fmt, fmtD, shortDate, enrichAd, buildWeekly, yesterdayStr, formatReportingDate } from "@/lib/helpers";
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid,
