@@ -12,6 +12,7 @@ export function TasksTab() {
   const deleteTask = useDeleteTask();
   const [newLabel, setNewLabel] = useState("");
   const [newCat, setNewCat] = useState("daily");
+  const [newWeight, setNewWeight] = useState(1);
 
   // Heatmap range: last 35 days
   const hmEnd = todayStr();
@@ -40,24 +41,32 @@ export function TasksTab() {
 
   const done = tasks.filter((t) => t.is_completed).length;
   const total = tasks.length;
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const totalPossibleImpact = tasks.reduce((sum, t) => sum + (t.weight || 1), 0);
+  const impactCompleted = tasks.filter((t) => t.is_completed).reduce((sum, t) => sum + (t.weight || 1), 0);
+  const weightedPct = totalPossibleImpact > 0 ? Math.round((impactCompleted / totalPossibleImpact) * 100) : 0;
 
   const handleAdd = () => {
     if (!newLabel.trim()) return;
-    addTask.mutate({ label: newLabel.trim(), category: newCat, date: viewDate });
+    addTask.mutate({ label: newLabel.trim(), category: newCat, date: viewDate, weight: newWeight });
     setNewLabel("");
+    setNewWeight(1);
   };
 
-  // Compute heatmap data
-  const heatmapData: Record<string, { done: number; total: number }> = {};
+  // Compute heatmap data using weighted impact
+  const heatmapData: Record<string, { impactDone: number; impactTotal: number; done: number; total: number }> = {};
   rangeTasks.forEach((t) => {
-    if (!heatmapData[t.date]) heatmapData[t.date] = { done: 0, total: 0 };
+    if (!heatmapData[t.date]) heatmapData[t.date] = { impactDone: 0, impactTotal: 0, done: 0, total: 0 };
+    const w = t.weight || 1;
+    heatmapData[t.date].impactTotal += w;
     heatmapData[t.date].total++;
-    if (t.is_completed) heatmapData[t.date].done++;
+    if (t.is_completed) {
+      heatmapData[t.date].impactDone += w;
+      heatmapData[t.date].done++;
+    }
   });
 
   // History (last 14 days)
-  const history: Array<{ date: string; done: number; total: number; pct: number; tasks: string[] }> = [];
+  const history: Array<{ date: string; done: number; total: number; pct: number; impactScore: number; tasks: string[] }> = [];
   for (let i = 0; i < 14; i++) {
     const d = new Date(todayStr() + "T12:00:00");
     d.setDate(d.getDate() - i);
@@ -66,8 +75,17 @@ export function TasksTab() {
     if (!h && i > 0) continue;
     const dd = h?.done || 0;
     const tt = h?.total || 0;
+    const iScore = h?.impactDone || 0;
+    const iTotal = h?.impactTotal || 0;
     const completedLabels = rangeTasks.filter((t) => t.date === key && t.is_completed).map((t) => t.label);
-    history.push({ date: key, done: dd, total: tt, pct: tt > 0 ? Math.round((dd / tt) * 100) : 0, tasks: completedLabels });
+    history.push({
+      date: key,
+      done: dd,
+      total: tt,
+      pct: iTotal > 0 ? Math.round((iScore / iTotal) * 100) : 0,
+      impactScore: iScore,
+      tasks: completedLabels,
+    });
   }
 
   return (
@@ -92,10 +110,10 @@ export function TasksTab() {
       {/* Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 mb-6">
         {[
-          { value: done.toString(), label: "Done Today" },
+          { value: done.toString(), label: "Tasks Done" },
           { value: total.toString(), label: "Total Tasks" },
-          { value: pct + "%", label: "Completion" },
-          { value: "—", label: "Day Streak" },
+          { value: weightedPct + "%", label: "Weighted %" },
+          { value: impactCompleted.toString(), label: "Impact Score" },
         ].map((s) => (
           <div key={s.label} className="memphis-card relative overflow-hidden rounded-lg border-4 border-foreground p-4 text-center memphis-shadow" style={{ background: "linear-gradient(180deg, rgba(255,255,255,.96), rgba(241,233,251,.72))" }}>
             <div className="font-fredoka text-[38px] font-bold leading-none">{s.value}</div>
@@ -130,6 +148,9 @@ export function TasksTab() {
                   >
                     <input type="checkbox" checked={t.is_completed} readOnly className="w-5 h-5 accent-primary cursor-pointer flex-shrink-0" />
                     <span className={cn("text-sm font-semibold flex-1", t.is_completed && "line-through text-muted-foreground")}>{t.label}</span>
+                    <span className="text-[10px] font-space font-bold text-muted-foreground/70 tracking-wider uppercase px-1.5 py-0.5 rounded-md bg-foreground/5 flex-shrink-0">
+                      ×{t.weight || 1}
+                    </span>
                     {!t.is_default && (
                       <button
                         onClick={(e) => { e.stopPropagation(); deleteTask.mutate(t.id); }}
@@ -148,7 +169,7 @@ export function TasksTab() {
       </div>
 
       {/* Add Custom Task */}
-      <div className="mt-5 bg-card rounded-xl p-4 memphis-shadow flex gap-2 flex-wrap">
+      <div className="mt-5 bg-card rounded-xl p-4 memphis-shadow flex gap-2 flex-wrap items-end">
         <input
           type="text"
           value={newLabel}
@@ -162,6 +183,11 @@ export function TasksTab() {
             <option key={k} value={k}>{v.name}</option>
           ))}
         </select>
+        <select value={newWeight} onChange={(e) => setNewWeight(Number(e.target.value))} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm w-[90px]">
+          {[1, 2, 3, 4, 5].map((w) => (
+            <option key={w} value={w}>×{w}</option>
+          ))}
+        </select>
         <button onClick={handleAdd} className="font-space font-extrabold uppercase tracking-[0.12em] text-sm px-4 py-2.5 bg-primary text-primary-foreground border-[3px] border-foreground rounded-full memphis-shadow-sm hover:bg-lav-500 transition-all cursor-pointer memphis-shadow-hover">
           + Add Task
         </button>
@@ -170,7 +196,7 @@ export function TasksTab() {
       {/* Heatmap */}
       <div className="memphis-card relative overflow-hidden rounded-lg border-4 border-foreground bg-card/95 p-5 memphis-shadow mt-6">
         <div className="memphis-stripe absolute top-0 left-0 w-full h-3.5" />
-        <h3 className="font-fredoka text-[28px] font-bold tracking-tight mb-4 pt-3.5">Activity Heatmap — Last 5 Weeks</h3>
+        <h3 className="font-fredoka text-[28px] font-bold tracking-tight mb-4 pt-3.5">Impact Heatmap — Last 5 Weeks</h3>
         <div className="grid grid-cols-7 gap-1.5">
           {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
             <div key={i} className="font-extrabold text-[10px] text-center py-0.5">{d}</div>
@@ -180,19 +206,26 @@ export function TasksTab() {
             const start = new Date(hmStart + "T12:00:00");
             const padStart = start.getDay();
             for (let i = 0; i < padStart; i++) cells.push(<div key={`pad-${i}`} className="aspect-square" />);
+
+            // Find max impact across range for relative scaling
+            let maxImpact = 1;
+            Object.values(heatmapData).forEach((h) => {
+              if (h.impactDone > maxImpact) maxImpact = h.impactDone;
+            });
+
             for (let i = 0; i < 35; i++) {
               const d = new Date(start);
               d.setDate(d.getDate() + i);
               const key = d.toISOString().slice(0, 10);
               const h = heatmapData[key];
               let level = 0;
-              if (h && h.total > 0) {
-                const r = h.done / h.total;
-                if (r > 0) level = 1;
-                if (r >= 0.25) level = 2;
-                if (r >= 0.5) level = 3;
-                if (r >= 0.75) level = 4;
-                if (r >= 1) level = 5;
+              if (h && h.impactTotal > 0) {
+                const ratio = h.impactDone / maxImpact;
+                if (ratio > 0) level = 1;
+                if (ratio >= 0.2) level = 2;
+                if (ratio >= 0.4) level = 3;
+                if (ratio >= 0.65) level = 4;
+                if (ratio >= 0.85) level = 5;
               }
               const isT = key === todayStr();
               cells.push(
@@ -202,7 +235,7 @@ export function TasksTab() {
                     `aspect-square rounded-[10px] flex items-center justify-center text-[10px] border-2 border-foreground/15 heatmap-l${level}`,
                     isT && "outline-[3px] outline outline-foreground outline-offset-2"
                   )}
-                  title={`${key}: ${h?.done || 0}/${h?.total || 0} tasks`}
+                  title={`${key}: Impact ${h?.impactDone || 0}/${h?.impactTotal || 0}`}
                 >
                   {d.getDate()}
                 </div>
@@ -221,7 +254,7 @@ export function TasksTab() {
           <table className="w-full text-sm">
             <thead>
               <tr>
-                {["Date", "Done", "Total", "%", "Tasks Completed"].map((h) => (
+                {["Date", "Done", "Total", "Weighted %", "Impact", "Tasks Completed"].map((h) => (
                   <th key={h} className="text-left px-3 py-3 font-space font-extrabold text-[10px] uppercase tracking-[0.18em] text-lav-700 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -242,6 +275,7 @@ export function TasksTab() {
                       {h.pct}%
                     </span>
                   </td>
+                  <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50 font-bold">{h.impactScore}</td>
                   <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50 text-xs text-muted-foreground">
                     {h.tasks.length > 0 ? h.tasks.join(", ") : "—"}
                   </td>
