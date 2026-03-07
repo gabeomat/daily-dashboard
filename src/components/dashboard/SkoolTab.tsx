@@ -140,9 +140,14 @@ export function SkoolTab() {
           ].map((f) => (
             <div key={f.key} className="flex flex-col gap-1">
               <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700">{f.label}</label>
-              <input type="text" placeholder={f.placeholder} value={(form as any)[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground" />
+              <input type="text" placeholder={f.placeholder} value={(notesForm as any)[f.key]} onChange={(e) => setNotesForm({ ...notesForm, [f.key]: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground" />
             </div>
           ))}
+        </div>
+        <div className="flex gap-3 mt-3 items-center">
+          <button onClick={handleSaveNotes} disabled={upsertNotes.isPending} className="font-space font-extrabold uppercase tracking-[0.12em] text-sm px-4 py-2.5 bg-primary text-primary-foreground border-[3px] border-foreground rounded-full memphis-shadow-sm hover:bg-lav-500 transition-all cursor-pointer memphis-shadow-hover">
+            {upsertNotes.isPending ? "Saving..." : "Save CEO Notes"}
+          </button>
         </div>
         {existing && (existing.biggest_win || existing.biggest_bottleneck || existing.real_priority) && (
           <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
