@@ -28,8 +28,6 @@ export function OverviewTab() {
   const latestDate = latest?.date || yesterdayStr();
   const { data: tasksForDate = [] } = useTasksForDate(latestDate);
   const latestEntry = daily.find((d) => d.date === latestDate);
-
-  const latest = daily[daily.length - 1];
   const mrr = latest?.mrr || 0;
 
   // Totals from ads
