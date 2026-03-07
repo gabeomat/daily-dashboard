@@ -15,6 +15,17 @@ export function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
+export function yesterdayStr() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+export function formatReportingDate(dateStr: string) {
+  const d = new Date(dateStr + "T12:00:00");
+  return d.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+}
+
 export function enrichAd(d: { ad_spend: number | null; t18: number | null; t47: number | null; t333: number | null }) {
   const spend = d.ad_spend || 0;
   const t18 = d.t18 || 0;
