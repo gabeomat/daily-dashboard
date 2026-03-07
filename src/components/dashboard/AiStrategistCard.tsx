@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DailyEntry } from "@/hooks/useDailyEntries";
 import { Task } from "@/hooks/useTasks";
-import { Sparkles, AlertTriangle, Target, XCircle, Brain, Loader2 } from "lucide-react";
+import { Sparkles, AlertTriangle, Target, XCircle, Brain, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 type Insight = {
@@ -45,12 +45,33 @@ const SECTIONS: { key: keyof Insight; label: string; icon: React.ReactNode }[] =
 export function AiStrategistCard({ date, daily, tasks, signalChanged, signalOff, signalFocus }: Props) {
   const [insight, setInsight] = useState<Insight | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingSaved, setLoadingSaved] = useState(true);
 
   const cur = daily.find((d) => d.date === date);
 
   const weightedScore = tasks.reduce((s, t) => s + (t.is_completed ? t.weight : 0), 0);
   const totalWeight = tasks.reduce((s, t) => s + t.weight, 0);
   const taskPct = totalWeight > 0 ? Math.round((weightedScore / totalWeight) * 100) : 0;
+
+  // Load saved insight on mount / date change
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingSaved(true);
+    setInsight(null);
+    supabase
+      .from("ai_insights")
+      .select("response")
+      .eq("date", date)
+      .eq("module", "strategist")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data?.response) {
+          setInsight(data.response as unknown as Insight);
+        }
+        if (!cancelled) setLoadingSaved(false);
+      });
+    return () => { cancelled = true; };
+  }, [date]);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -85,7 +106,15 @@ export function AiStrategistCard({ date, daily, tasks, signalChanged, signalOff,
         toast.error(data.error);
         return;
       }
-      setInsight(data as Insight);
+
+      const result = data as Insight;
+      setInsight(result);
+
+      // Upsert into ai_insights
+      await supabase.from("ai_insights").upsert(
+        { date, module: "strategist", response: result as any },
+        { onConflict: "date,module" }
+      );
     } catch (e: any) {
       console.error("AI Strategist error:", e);
       toast.error(e?.message || "Failed to generate insight");
@@ -107,25 +136,36 @@ export function AiStrategistCard({ date, daily, tasks, signalChanged, signalOff,
           disabled={loading}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-foreground bg-primary text-primary-foreground font-space text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-opacity disabled:opacity-50"
         >
-          {loading ? (
-            <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              Analyzing…
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-3.5 h-3.5" />
-              {insight ? "Refresh" : "Generate Insight"}
-            </>
-          )}
-        </button>
-      </div>
+           {loading ? (
+             <>
+               <Loader2 className="w-3.5 h-3.5 animate-spin" />
+               Analyzing…
+             </>
+           ) : insight ? (
+             <>
+               <RefreshCw className="w-3.5 h-3.5" />
+               Regenerate
+             </>
+           ) : (
+             <>
+               <Sparkles className="w-3.5 h-3.5" />
+               Generate Insight
+             </>
+           )}
+         </button>
+       </div>
 
-      {!insight && !loading && (
-        <p className="text-sm text-muted-foreground italic">
-          Click "Generate Insight" to get an AI-powered strategic analysis of your current data.
-        </p>
-      )}
+       {!insight && !loading && !loadingSaved && (
+         <p className="text-sm text-muted-foreground italic">
+           Click "Generate Insight" to get an AI-powered strategic analysis of your current data.
+         </p>
+       )}
+
+       {loadingSaved && !loading && (
+         <div className="flex items-center justify-center py-4">
+           <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+         </div>
+       )}
 
       {loading && (
         <div className="flex items-center justify-center py-8">
