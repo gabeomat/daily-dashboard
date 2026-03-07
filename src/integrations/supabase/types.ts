@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_insights: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          module: string
+          response: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          module?: string
+          response?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          module?: string
+          response?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       daily_entries: {
         Row: {
           biggest_bottleneck: string
