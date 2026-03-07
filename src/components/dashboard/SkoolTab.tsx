@@ -16,7 +16,7 @@ export function SkoolTab() {
   const upsert = useUpsertDailyEntry();
   const upsertNotes = useUpsertDailyEntry();
   const [date, setDate] = useState(yesterdayStr());
-  const { data: tasksForDate = [] } = useTasksForDate(date);
+  const [form, setForm] = useState({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" });
   const [form, setForm] = useState({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" });
   const [notesForm, setNotesForm] = useState({ biggest_win: "", biggest_bottleneck: "", real_priority: "" });
 
