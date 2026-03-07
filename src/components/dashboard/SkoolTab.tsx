@@ -32,10 +32,13 @@ export function SkoolTab() {
       profile_activity: parseInt(form.profile_activity) || 0,
       group_activity: parseInt(form.group_activity) || 0,
       one_thing: form.one_thing,
+      biggest_win: form.biggest_win,
+      biggest_bottleneck: form.biggest_bottleneck,
+      real_priority: form.real_priority,
     }, {
       onSuccess: () => {
         toast.success("Saved! Metrics logged for " + date);
-        setForm({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "" });
+        setForm({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" });
       },
     });
   };
