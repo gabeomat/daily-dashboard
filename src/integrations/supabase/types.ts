@@ -102,6 +102,7 @@ export type Database = {
           is_default: boolean
           label: string
           sort_order: number
+          weight: number
         }
         Insert: {
           category?: string
@@ -112,6 +113,7 @@ export type Database = {
           is_default?: boolean
           label: string
           sort_order?: number
+          weight?: number
         }
         Update: {
           category?: string
@@ -122,6 +124,7 @@ export type Database = {
           is_default?: boolean
           label?: string
           sort_order?: number
+          weight?: number
         }
         Relationships: []
       }

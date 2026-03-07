@@ -1,0 +1,1 @@
+ALTER TABLE public.tasks ADD COLUMN weight integer NOT NULL DEFAULT 1;

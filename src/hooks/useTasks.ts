@@ -9,19 +9,20 @@ export type Task = {
   is_completed: boolean;
   is_default: boolean;
   sort_order: number;
+  weight: number;
 };
 
 export const DEFAULT_TASKS = [
-  { cat: "daily", label: "Enter Skool metrics" },
-  { cat: "daily", label: "Enter ad metrics" },
-  { cat: "daily", label: "Engage in Skool (reply to members, start a convo)" },
-  { cat: "content", label: "Post or share in a Skool community" },
-  { cat: "content", label: "Work on YouTube video (script, record, edit, or publish)" },
-  { cat: "content", label: "Send or draft email to your list" },
-  { cat: "growth", label: "Review & optimize ad creatives or targeting" },
-  { cat: "growth", label: "Reach out for collab, summit, or audience share" },
-  { cat: "product", label: "Build or ship a new tool to the Plug & Play library" },
-  { cat: "product", label: "Create or improve training content" },
+  { cat: "daily", label: "Enter Skool metrics", weight: 1 },
+  { cat: "daily", label: "Enter ad metrics", weight: 1 },
+  { cat: "daily", label: "Engage in Skool (reply to members, start a convo)", weight: 2 },
+  { cat: "content", label: "Post or share in a Skool community", weight: 2 },
+  { cat: "content", label: "Work on YouTube video (script, record, edit, or publish)", weight: 3 },
+  { cat: "content", label: "Send or draft email to your list", weight: 3 },
+  { cat: "growth", label: "Review & optimize ad creatives or targeting", weight: 2 },
+  { cat: "growth", label: "Reach out for collab, summit, or audience share", weight: 3 },
+  { cat: "product", label: "Build or ship a new tool to the Plug & Play library", weight: 4 },
+  { cat: "product", label: "Create or improve training content", weight: 3 },
 ];
 
 export const CATEGORIES: Record<string, { name: string; icon: string }> = {
@@ -66,6 +67,7 @@ export function useSeedDefaultTasks() {
         is_default: true,
         is_completed: false,
         sort_order: i,
+        weight: t.weight,
       }));
       const { error } = await supabase.from("tasks").insert(rows);
       if (error) throw error;
@@ -91,10 +93,10 @@ export function useToggleTask() {
 export function useAddTask() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (task: { label: string; category: string; date: string }) => {
+    mutationFn: async (task: { label: string; category: string; date: string; weight?: number }) => {
       const { error } = await supabase
         .from("tasks")
-        .insert({ ...task, is_default: false, is_completed: false, sort_order: 99 });
+        .insert({ ...task, is_default: false, is_completed: false, sort_order: 99, weight: task.weight ?? 1 });
       if (error) throw error;
     },
     onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["tasks", v.date] }),
