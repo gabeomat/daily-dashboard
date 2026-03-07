@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DailyEntry } from "@/hooks/useDailyEntries";
 import { Task } from "@/hooks/useTasks";
-import { Sparkles, AlertTriangle, Target, XCircle, Brain, Loader2 } from "lucide-react";
+import { Sparkles, AlertTriangle, Target, XCircle, Brain, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 type Insight = {
