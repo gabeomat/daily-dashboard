@@ -1,95 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&family=Fredoka:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Memphis palette */
+    --lav-50: 270 60% 95%;
+    --lav-100: 270 60% 90%;
+    --lav-200: 270 60% 78%;
+    --lav-300: 270 60% 70%;
+    --lav-400: 270 60% 60%;
+    --lav-500: 270 75% 50%;
+    --lav-700: 270 72% 30%;
+    --lav-900: 270 60% 10%;
 
+    --pink-100: 330 90% 90%;
+    --pink-300: 330 82% 70%;
+    --pink-400: 330 85% 60%;
+    --pink-500: 330 90% 50%;
+    --pink-700: 330 85% 30%;
+
+    --banana-100: 50 100% 90%;
+    --banana-300: 50 98% 70%;
+    --banana-400: 50 99% 60%;
+    --banana-500: 50 100% 50%;
+    --banana-900: 50 100% 10%;
+
+    --sky-100: 195 100% 90%;
+    --sky-300: 195 100% 70%;
+    --sky-400: 195 100% 60%;
+    --sky-500: 195 100% 50%;
+    --sky-800: 195 100% 20%;
+
+    --aqua-100: 168 100% 90%;
+    --aqua-300: 168 100% 70%;
+    --aqua-500: 168 100% 50%;
+    --aqua-700: 168 100% 30%;
+    --aqua-900: 168 100% 10%;
+
+    /* Semantic tokens */
+    --background: 290 40% 99%;
+    --foreground: 270 60% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 270 60% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+    --popover-foreground: 270 60% 10%;
+    --primary: 330 90% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 270 60% 95%;
+    --secondary-foreground: 270 60% 10%;
+    --muted: 270 20% 95%;
+    --muted-foreground: 270 20% 45%;
+    --accent: 195 100% 50%;
+    --accent-foreground: 270 60% 10%;
+    --destructive: 330 90% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 270 60% 10%;
+    --input: 270 60% 10%;
+    --ring: 330 90% 50%;
+    --radius: 1.25rem;
+    --positive: 168 100% 30%;
+    --negative: 330 90% 50%;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
@@ -98,8 +79,92 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 }
+
+/* Memphis background */
+.memphis-bg {
+  background:
+    radial-gradient(circle at 12% 14%, hsla(50, 100%, 50%, 0.95) 0 70px, transparent 72px),
+    radial-gradient(circle at 86% 10%, hsla(168, 100%, 50%, 0.85) 0 85px, transparent 87px),
+    radial-gradient(circle at 90% 88%, hsla(330, 82%, 70%, 0.8) 0 110px, transparent 112px),
+    linear-gradient(135deg, hsla(195, 100%, 70%, 0.18) 25%, transparent 25%) 0 0/32px 32px,
+    linear-gradient(225deg, hsla(270, 60%, 70%, 0.12) 25%, transparent 25%) 0 0/32px 32px,
+    linear-gradient(180deg, hsl(330, 100%, 98%) 0%, hsl(290, 40%, 99%) 45%, hsl(50, 100%, 94%) 100%);
+}
+
+/* Memphis shadow */
+.memphis-shadow {
+  box-shadow: 8px 8px 0 hsl(var(--foreground));
+}
+.memphis-shadow-hover:hover {
+  box-shadow: 12px 12px 0 hsl(var(--foreground));
+  transform: translate(-2px, -2px);
+}
+.memphis-shadow-sm {
+  box-shadow: 4px 4px 0 hsl(var(--foreground));
+}
+
+/* Memphis card accent circle */
+.memphis-card::after {
+  content: '';
+  position: absolute;
+  bottom: -24px;
+  right: -24px;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: hsla(195, 100%, 70%, 0.16);
+  pointer-events: none;
+}
+
+/* Memphis stripe bar */
+.memphis-stripe {
+  background: repeating-linear-gradient(
+    90deg,
+    hsl(var(--foreground)) 0 18px,
+    hsl(var(--banana-500)) 18px 36px,
+    hsl(var(--primary)) 36px 54px,
+    hsl(var(--sky-500)) 54px 72px,
+    hsl(var(--aqua-500)) 72px 90px
+  );
+}
+
+/* Goal bar fill pattern */
+.goal-fill-pattern {
+  background: repeating-linear-gradient(
+    90deg,
+    hsl(var(--primary)) 0 18px,
+    hsl(var(--banana-500)) 18px 36px,
+    hsl(var(--sky-500)) 36px 54px,
+    hsl(var(--aqua-500)) 54px 72px
+  );
+}
+
+/* Pulse dot animation */
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.18); opacity: 0.62; }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2s infinite;
+}
+
+/* Font classes */
+.font-fredoka {
+  font-family: 'Fredoka', sans-serif;
+}
+.font-space {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Heatmap levels */
+.heatmap-l0 { background: hsl(var(--lav-50)); }
+.heatmap-l1 { background: hsl(var(--banana-300)); }
+.heatmap-l2 { background: hsl(var(--sky-300)); }
+.heatmap-l3 { background: hsl(var(--lav-300)); }
+.heatmap-l4 { background: hsl(var(--aqua-500)); }
+.heatmap-l5 { background: hsl(var(--primary)); color: white; }
