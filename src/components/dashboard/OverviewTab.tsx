@@ -24,6 +24,10 @@ const COLORS = {
 export function OverviewTab() {
   const { data: daily = [] } = useDailyEntries();
   const { data: metrics = [] } = useDailyMetrics();
+  const latest = daily[daily.length - 1];
+  const latestDate = latest?.date || yesterdayStr();
+  const { data: tasksForDate = [] } = useTasksForDate(latestDate);
+  const latestEntry = daily.find((d) => d.date === latestDate);
 
   const latest = daily[daily.length - 1];
   const mrr = latest?.mrr || 0;
