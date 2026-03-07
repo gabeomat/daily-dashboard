@@ -13,16 +13,16 @@ export type Task = {
 };
 
 export const DEFAULT_TASKS = [
-  { cat: "daily", label: "Enter Skool metrics" },
-  { cat: "daily", label: "Enter ad metrics" },
-  { cat: "daily", label: "Engage in Skool (reply to members, start a convo)" },
-  { cat: "content", label: "Post or share in a Skool community" },
-  { cat: "content", label: "Work on YouTube video (script, record, edit, or publish)" },
-  { cat: "content", label: "Send or draft email to your list" },
-  { cat: "growth", label: "Review & optimize ad creatives or targeting" },
-  { cat: "growth", label: "Reach out for collab, summit, or audience share" },
-  { cat: "product", label: "Build or ship a new tool to the Plug & Play library" },
-  { cat: "product", label: "Create or improve training content" },
+  { cat: "daily", label: "Enter Skool metrics", weight: 1 },
+  { cat: "daily", label: "Enter ad metrics", weight: 1 },
+  { cat: "daily", label: "Engage in Skool (reply to members, start a convo)", weight: 2 },
+  { cat: "content", label: "Post or share in a Skool community", weight: 2 },
+  { cat: "content", label: "Work on YouTube video (script, record, edit, or publish)", weight: 3 },
+  { cat: "content", label: "Send or draft email to your list", weight: 3 },
+  { cat: "growth", label: "Review & optimize ad creatives or targeting", weight: 2 },
+  { cat: "growth", label: "Reach out for collab, summit, or audience share", weight: 3 },
+  { cat: "product", label: "Build or ship a new tool to the Plug & Play library", weight: 4 },
+  { cat: "product", label: "Create or improve training content", weight: 3 },
 ];
 
 export const CATEGORIES: Record<string, { name: string; icon: string }> = {
