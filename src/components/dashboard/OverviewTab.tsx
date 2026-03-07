@@ -123,6 +123,15 @@ export function OverviewTab() {
         <SignalSummary date={latestDate} daily={daily} tasks={tasksForDate} />
       </div>
 
+      <AiStrategistCard
+        date={latestDate}
+        daily={daily}
+        tasks={tasksForDate}
+        signalChanged={signalChanged}
+        signalOff={signalOff}
+        signalFocus={signalFocus}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <ChartCard title="MRR Trend">
           <ResponsiveContainer>
