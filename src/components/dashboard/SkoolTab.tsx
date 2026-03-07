@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useDailyEntries, useUpsertDailyEntry } from "@/hooks/useDailyEntries";
+import { useTasksForDate } from "@/hooks/useTasks";
 import { KpiCard } from "./KpiCard";
 import { ChartCard } from "./ChartCard";
+import { SignalSummary } from "./SignalSummary";
 import { fmt, shortDate, yesterdayStr, formatReportingDate } from "@/lib/helpers";
 import { toast } from "sonner";
 import {
@@ -16,6 +18,7 @@ export function SkoolTab() {
   const upsert = useUpsertDailyEntry();
   const upsertNotes = useUpsertDailyEntry();
   const [date, setDate] = useState(yesterdayStr());
+  const { data: tasksForDate = [] } = useTasksForDate(date);
   const [form, setForm] = useState({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" });
   const [notesForm, setNotesForm] = useState({ biggest_win: "", biggest_bottleneck: "", real_priority: "" });
 
@@ -157,6 +160,9 @@ export function SkoolTab() {
           </div>
         )}
       </div>
+
+      {/* Signal Summary */}
+      <SignalSummary date={date} daily={daily} tasks={tasksForDate} />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
