@@ -12,6 +12,9 @@ export type DailyEntry = {
   profile_activity: number | null;
   group_activity: number | null;
   one_thing: string | null;
+  biggest_win: string;
+  biggest_bottleneck: string;
+  real_priority: string;
 };
 
 export function useDailyEntries() {
