@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Coachbox — Command Center</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0" integrity="sha384-cVMg8E3QFwTvGCDuK+ET4PD341jF3W8nO1auiXfuZNQkzbUUiBGLsIQUE+b1mxws" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --lav50:#f1e9fb;--lav100:#e4d3f8;--lav200:#c8a7f1;--lav300:#ad7bea;--lav400:#9250e2;--lav500:#7624db;--lav700:#471584;--lav900:#18072c;
+      --pink100:#fbd0ea;--pink300:#f372bf;--pink400:#ef43aa;--pink500:#eb1495;--pink700:#8d0c59;
+      --banana100:#fff8cc;--banana300:#feea67;--banana400:#fee334;--banana500:#fedc01;--banana900:#332c00;
+      --sky100:#ccf2ff;--sky300:#66d9ff;--sky400:#33ccff;--sky500:#00bfff;--sky800:#004d66;
+      --aqua100:#ccfff8;--aqua300:#66ffeb;--aqua500:#00ffdd;--aqua700:#009985;--aqua900:#00332c;
+      --bg:#fdf8ff;--bg-soft:#fffdf1;--bg-card:#ffffff;--text:#18072c;--text-secondary:#471584;--text-muted:#7c6799;
+      --accent:#eb1495;--accent-soft:#f372bf;--highlight:#00bfff;--ink:#18072c;--border:#18072c;--border-strong:#18072c;--border-light:#eadff7;
+      --positive:#009985;--negative:#eb1495;--shadow:8px 8px 0 var(--ink);--shadow-hover:12px 12px 0 var(--ink);
+      --radius:20px;
+    }
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+      color:var(--text);line-height:1.55;min-height:100vh;position:relative;overflow-x:hidden;
+      background:
+        radial-gradient(circle at 12% 14%, rgba(254,220,1,.95) 0 70px, transparent 72px),
+        radial-gradient(circle at 86% 10%, rgba(0,255,221,.85) 0 85px, transparent 87px),
+        radial-gradient(circle at 90% 88%, rgba(243,114,191,.8) 0 110px, transparent 112px),
+        linear-gradient(135deg, rgba(102,217,255,.18) 25%, transparent 25%) 0 0/32px 32px,
+        linear-gradient(225deg, rgba(173,123,234,.12) 25%, transparent 25%) 0 0/32px 32px,
+        linear-gradient(180deg,#fff7fd 0%,#fdf8ff 45%,#fffce6 100%);
+    }
+    body::before,body::after{content:'';position:fixed;pointer-events:none;z-index:0;opacity:.9}
+    body::before{width:240px;height:240px;left:-70px;bottom:8%;background:repeating-radial-gradient(circle,var(--pink500) 0 6px,transparent 6px 18px);transform:rotate(-16deg)}
+    body::after{width:260px;height:28px;right:-40px;top:120px;background:repeating-linear-gradient(90deg,var(--ink) 0 10px,var(--banana500) 10px 20px,var(--sky500) 20px 30px,var(--aqua500) 30px 40px);transform:rotate(-12deg);border:3px solid var(--ink)}
+    .dashboard{position:relative;z-index:1;max-width:1420px;margin:0 auto;padding:34px 26px 48px}
+    .dash-header{display:flex;justify-content:space-between;align-items:end;margin-bottom:26px;flex-wrap:wrap;gap:14px;padding:22px 24px;background:rgba(255,255,255,.88);border:4px solid var(--ink);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(6px)}
+    .dash-header h1{font-family:'Fredoka',sans-serif;font-size:clamp(2.4rem,5vw,4.8rem);font-weight:700;letter-spacing:-.04em;line-height:.92;max-width:860px;text-shadow:3px 3px 0 var(--banana500)}
+    .dash-header h1 span{color:var(--accent);display:inline-block;transform:rotate(-3deg)}
+    .last-updated{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;background:var(--banana300);border:3px solid var(--ink);border-radius:999px;font-size:11px;color:var(--ink);text-transform:uppercase;letter-spacing:.16em;font-weight:800;box-shadow:4px 4px 0 var(--ink)}
+    .tab-bar{display:flex;gap:12px;background:transparent;padding:0;margin-bottom:28px;flex-wrap:wrap;border-bottom:none}
+    .tab-btn{background:var(--bg-card);border:3px solid var(--ink);padding:14px 18px 12px;font-size:12px;font-weight:800;color:var(--ink);border-radius:999px;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease, background .15s ease;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.14em;box-shadow:4px 4px 0 var(--ink)}
+    .tab-btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink);background:var(--sky300)}
+    .tab-btn.active{background:var(--accent);color:#fff;border-color:var(--ink);box-shadow:6px 6px 0 var(--ink)}
+    .tab-panel{display:none}.tab-panel.active{display:block}
+    .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:18px;margin-bottom:24px}
+    .kpi-card,.chart-card,.table-card,.history-card,.task-category,.entry-card,.goal-bar-wrap,.task-summary-card{
+      background:rgba(255,255,255,.93);border:4px solid var(--ink);border-radius:var(--radius);box-shadow:var(--shadow);position:relative;overflow:hidden
+    }
+    .kpi-card::after,.chart-card::after,.table-card::after,.history-card::after,.task-category::after,.entry-card::after,.goal-bar-wrap::after,.task-summary-card::after{content:'';position:absolute;inset:auto -24px -24px auto;width:92px;height:92px;border-radius:50%;background:rgba(102,217,255,.16);pointer-events:none}
+    .kpi-card{padding:22px 22px 18px;transform:rotate(calc(var(--tilt,0) * 1deg))}
+    .kpi-row .kpi-card:nth-child(odd){--tilt:-.5}.kpi-row .kpi-card:nth-child(even){--tilt:.5}
+    .kpi-label{font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.22em;margin-bottom:10px;font-weight:800;font-family:'Space Grotesk',sans-serif}
+    .kpi-value{font-family:'Fredoka',sans-serif;font-size:42px;font-weight:700;color:var(--text);line-height:.95}
+    .kpi-change{font-size:12px;font-weight:700;margin-top:10px}.kpi-change.positive{color:var(--positive)}.kpi-change.negative{color:var(--negative)}.kpi-change.neutral{color:var(--text-muted)}
+    .goal-bar-wrap{padding:24px 26px;margin-bottom:24px;background:
+      linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.9)),
+      repeating-linear-gradient(-45deg,var(--banana100) 0 14px,var(--lav100) 14px 28px)}
+    .goal-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;gap:12px}
+    .goal-header h3,.chart-card h3,.table-card h3,.history-card h3,.task-category h3,.entry-card h3{font-family:'Fredoka',sans-serif;font-size:28px;font-weight:700;letter-spacing:-.03em;position:relative;z-index:1}
+    .goal-header span{font-size:11px;color:var(--ink);text-transform:uppercase;letter-spacing:.18em;font-weight:800;background:var(--aqua300);padding:6px 10px;border:3px solid var(--ink);border-radius:999px}
+    .goal-track{height:18px;background:#fff;border-radius:999px;overflow:hidden;border:3px solid var(--ink);position:relative}
+    .goal-fill{height:100%;background:repeating-linear-gradient(90deg,var(--accent) 0 18px,var(--banana500) 18px 36px,var(--sky500) 36px 54px,var(--aqua500) 54px 72px);border-radius:999px;transition:width .6s ease}
+    .goal-labels{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.14em;font-weight:800}
+    .chart-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:18px;margin-bottom:24px}
+    .chart-card,.table-card,.history-card,.task-category,.entry-card{padding:22px 24px}
+    .chart-card::before,.table-card::before,.history-card::before,.task-category::before{content:'';position:absolute;top:0;left:0;width:100%;height:14px;background:repeating-linear-gradient(90deg,var(--ink) 0 18px,var(--banana500) 18px 36px,var(--accent) 36px 54px,var(--sky500) 54px 72px,var(--aqua500) 72px 90px)}
+    .chart-card h3,.table-card h3,.history-card h3,.task-category h3{margin-bottom:18px;padding-top:14px}
+    .chart-wrap{position:relative;height:280px}
+    .chart-card.full-width{grid-column:1/-1}
+    .table-card{margin-bottom:24px;overflow-x:auto}
+    table{width:100%;border-collapse:separate;border-spacing:0 8px;font-size:13px}
+    th{text-align:left;padding:12px 12px;font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-secondary);white-space:nowrap;font-family:'Space Grotesk',sans-serif}
+    td{padding:14px 12px;background:rgba(241,233,251,.55);border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+    td:first-child{border-left:2px solid var(--ink);border-radius:12px 0 0 12px}
+    td:last-child{border-right:2px solid var(--ink);border-radius:0 12px 12px 0}
+    tr:hover td{background:rgba(102,255,235,.28)}tr:last-child td{border-bottom-width:2px}
+    .pill{display:inline-block;padding:5px 11px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.06em;border:2px solid var(--ink)}
+    .pill-green{background:var(--aqua300);color:var(--aqua900)} .pill-red{background:var(--pink300);color:#fff} .pill-amber{background:var(--banana300);color:var(--banana900)}
+    .date-filter{display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+    .date-filter label{font-size:12px;color:var(--text-secondary);font-weight:800;text-transform:uppercase;letter-spacing:.14em;font-family:'Space Grotesk',sans-serif}
+    .date-filter select,.task-add-row select,.entry-field input,.entry-field select,.task-add-row input{padding:11px 12px;border:3px solid var(--ink);border-radius:14px;font-size:13px;font-family:inherit;background:#fff;color:var(--text);box-shadow:4px 4px 0 rgba(24,7,44,.16)}
+    .date-filter select:focus,.task-add-row input:focus,.task-add-row select:focus,.entry-field input:focus,.entry-field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(235,20,149,.14)}
+    .task-nav{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+    .task-nav button,.btn-secondary,.btn-export,.task-add-row button,.btn-save{border:3px solid var(--ink);border-radius:999px;font-family:'Space Grotesk',sans-serif;font-weight:800;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:transform .15s ease, box-shadow .15s ease, background .15s ease}
+    .task-nav button,.btn-secondary,.btn-export{background:#fff;color:var(--ink);padding:9px 16px;box-shadow:4px 4px 0 var(--ink)}
+    .task-nav button:hover,.btn-secondary:hover,.btn-export:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink);background:var(--sky300)}
+    .task-nav .task-date-display{font-family:'Fredoka',sans-serif;font-size:34px;font-weight:700;color:var(--text);min-width:240px;text-align:center;line-height:1}
+    .task-nav .task-date-sub{font-size:11px;color:var(--text-secondary);font-weight:800;text-transform:uppercase;letter-spacing:.14em}
+    .task-categories{display:flex;flex-direction:column;gap:20px}
+    .task-category h3{display:flex;align-items:center;gap:10px}.task-category h3 .cat-icon{font-size:18px}.task-category .cat-progress{margin-left:auto;font-size:12px;color:var(--text-muted);font-weight:700}
+    .task-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+    .task-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;transition:background .1s;cursor:pointer;border:3px solid transparent}
+    .task-item:nth-child(odd){background:rgba(255,248,204,.45)}.task-item:nth-child(even){background:rgba(204,242,255,.38)}
+    .task-item:hover{background:rgba(243,114,191,.16);border-color:var(--ink)}
+    .task-item input[type="checkbox"]{width:20px;height:20px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+    .task-item label{font-size:14px;color:var(--text);cursor:pointer;flex:1;line-height:1.4;font-weight:600}.task-item.checked label{text-decoration:line-through;color:var(--text-muted)}
+    .task-item .task-streak{font-size:11px;color:var(--accent);font-weight:800;white-space:nowrap}
+    .task-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+    .task-summary-card{padding:18px 16px;text-align:center;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(241,233,251,.72))}
+    .task-summary-card .ts-value{font-family:'Fredoka',sans-serif;font-size:38px;font-weight:700;color:var(--text);line-height:.95}
+    .task-summary-card .ts-label{font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.16em;margin-top:6px;font-weight:800;font-family:'Space Grotesk',sans-serif}
+    .history-card{margin-top:24px}.history-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .history-cell{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-muted);border:2px solid rgba(24,7,44,.15)}
+    .history-cell.hdr{font-weight:800;font-size:10px;aspect-ratio:auto;padding:2px 0;border:none;background:none}
+    .history-cell.l0{background:#f6f0ff}.history-cell.l1{background:var(--banana300)}.history-cell.l2{background:var(--sky300)}.history-cell.l3{background:var(--lav300)}.history-cell.l4{background:var(--aqua500)}.history-cell.l5{background:var(--accent);color:#fff}
+    .history-cell.today{outline:3px solid var(--ink);outline-offset:2px}
+    .task-add-row{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:none}
+    .task-add-row button,.btn-save{background:var(--accent);color:#fff;padding:10px 16px;box-shadow:4px 4px 0 var(--ink)}
+    .task-add-row button:hover,.btn-save:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink);background:var(--lav500)}
+    .entry-card{background:linear-gradient(180deg,rgba(255,255,255,.98) 0%,rgba(255,248,204,.5) 100%);margin-bottom:24px}
+    .entry-card h3{margin-bottom:18px;display:flex;align-items:center;gap:10px;padding-top:14px}
+    .entry-card h3 .dot{width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--ink);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.18);opacity:.62}}
+    .entry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+    .entry-field{display:flex;flex-direction:column;gap:4px}
+    .entry-field label{font-size:10px;font-weight:800;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.16em;font-family:'Space Grotesk',sans-serif}
+    .entry-field input::placeholder{color:var(--text-muted)}.entry-field.wide{grid-column:1/-1}
+    .entry-actions{display:flex;gap:12px;margin-top:16px;align-items:center;flex-wrap:wrap}.entry-status{font-size:13px;color:var(--positive);font-weight:700;opacity:0;transition:opacity .3s}.entry-status.show{opacity:1}.entry-existing{font-size:12px;color:var(--text-muted);margin-top:8px;font-style:italic;font-weight:600}
+    .btn-secondary{padding:10px 20px}.export-bar{display:flex;gap:8px;justify-content:flex-end;margin-bottom:16px}.btn-export{padding:8px 14px}
+    canvas{filter:saturate(1.1)}
+    @media(max-width:768px){.chart-row{grid-template-columns:1fr}.kpi-row{grid-template-columns:repeat(2,1fr)}.dashboard{padding:18px 14px 36px}.entry-grid{grid-template-columns:1fr 1fr}.dash-header h1{font-size:2.5rem}.tab-btn{padding:12px 12px 10px;letter-spacing:.09em}.dash-header{padding:18px}.goal-header{flex-direction:column;align-items:flex-start}.task-nav .task-date-display{min-width:auto;text-align:left}.task-add-row{flex-direction:column}.history-grid{gap:4px}}
+  </style>
+
+</head>
+<body>
+<div class="dashboard">
+  <div class="dash-header">
+    <div><h1>AI <span>Coachbox</span> — Command Center</h1><div class="last-updated" id="last-updated"></div></div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('overview',this)">Overview</button>
+    <button class="tab-btn" onclick="switchTab('skool',this)">Skool Metrics</button>
+    <button class="tab-btn" onclick="switchTab('ads',this)">Ad Performance</button>
+    <button class="tab-btn" onclick="switchTab('tasks',this)">Tasks</button>
+  </div>
+
+  <!-- ═══════════ OVERVIEW ═══════════ -->
+  <div id="tab-overview" class="tab-panel active">
+    <div class="goal-bar-wrap">
+      <div class="goal-header"><h3>MRR Goal: Double in 3 Months</h3><span id="goal-pct"></span></div>
+      <div class="goal-track"><div class="goal-fill" id="goal-fill"></div></div>
+      <div class="goal-labels"><span>$0</span><span id="goal-current-label"></span><span id="goal-target-label"></span></div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Current MRR</div><div class="kpi-value" id="ov-mrr"></div><div class="kpi-change neutral" id="ov-mrr-change"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Members</div><div class="kpi-value" id="ov-members"></div><div class="kpi-change neutral" id="ov-members-change"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Retention</div><div class="kpi-value" id="ov-retention"></div><div class="kpi-change neutral" id="ov-retention-change"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Ad ROAS (All Time)</div><div class="kpi-value" id="ov-roas"></div><div class="kpi-change neutral" id="ov-roas-note"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Total Conversions</div><div class="kpi-value" id="ov-conv"></div><div class="kpi-change neutral" id="ov-conv-note"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Avg. CAC</div><div class="kpi-value" id="ov-cac"></div><div class="kpi-change neutral" id="ov-cac-note"></div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card"><h3>MRR Trend</h3><div class="chart-wrap"><canvas id="ov-mrr-chart"></canvas></div></div>
+      <div class="chart-card"><h3>Conversion Tier Mix (All Time)</h3><div class="chart-wrap"><canvas id="ov-tier-chart"></canvas></div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card full-width"><h3>Weekly Ad Spend vs Revenue</h3><div class="chart-wrap"><canvas id="ov-weekly-chart"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SKOOL METRICS ═══════════ -->
+  <div id="tab-skool" class="tab-panel">
+    <!-- Entry Form -->
+    <div class="entry-card" id="skool-entry">
+      <h3><span class="dot"></span> Log Today's Skool Metrics</h3>
+      <div class="entry-grid">
+        <div class="entry-field"><label>Date</label><input type="date" id="sk-date"></div>
+        <div class="entry-field"><label>MRR ($)</label><input type="number" id="sk-in-mrr" placeholder="2609" step="0.01"></div>
+        <div class="entry-field"><label>Retention (%)</label><input type="number" id="sk-in-ret" placeholder="93" step="0.1" min="0" max="100"></div>
+        <div class="entry-field"><label>Members</label><input type="number" id="sk-in-mem" placeholder="159" min="0"></div>
+        <div class="entry-field"><label>Traffic</label><input type="number" id="sk-in-traffic" placeholder="42" min="0"></div>
+        <div class="entry-field"><label>Discovery</label><input type="number" id="sk-in-disc" placeholder="512" min="0"></div>
+        <div class="entry-field"><label>Profile Activity</label><input type="number" id="sk-in-prof" placeholder="22" min="0"></div>
+        <div class="entry-field"><label>Group Activity</label><input type="number" id="sk-in-grp" placeholder="84" min="0"></div>
+        <div class="entry-field wide"><label>One Thing (today's focus)</label><input type="text" id="sk-in-one" placeholder="What's your #1 priority today?"></div>
+      </div>
+      <div class="entry-actions">
+        <button class="btn-save" onclick="saveSkool()">Save Skool Metrics</button>
+        <span class="entry-status" id="sk-status"></span>
+      </div>
+      <div class="entry-existing" id="sk-existing"></div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Latest MRR</div><div class="kpi-value" id="sk-mrr"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Retention</div><div class="kpi-value" id="sk-ret"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Members</div><div class="kpi-value" id="sk-mem"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Avg Traffic</div><div class="kpi-value" id="sk-traffic"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Avg Discovery</div><div class="kpi-value" id="sk-disc"></div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card"><h3>MRR Over Time</h3><div class="chart-wrap"><canvas id="sk-mrr-chart"></canvas></div></div>
+      <div class="chart-card"><h3>Retention %</h3><div class="chart-wrap"><canvas id="sk-ret-chart"></canvas></div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card"><h3>Traffic &amp; Discovery</h3><div class="chart-wrap"><canvas id="sk-traffic-chart"></canvas></div></div>
+      <div class="chart-card"><h3>Community Activity</h3><div class="chart-wrap"><canvas id="sk-activity-chart"></canvas></div></div>
+    </div>
+    <div class="export-bar"><button class="btn-export" onclick="exportCSV('skool')">Export Skool CSV</button></div>
+    <div class="table-card"><h3>Daily Log</h3>
+      <table><thead><tr><th>Date</th><th>MRR</th><th>Retention</th><th>Members</th><th>Traffic</th><th>Discovery</th><th>Profile</th><th>Group</th><th>One Thing</th></tr></thead><tbody id="sk-table-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- ═══════════ AD PERFORMANCE ═══════════ -->
+  <div id="tab-ads" class="tab-panel">
+    <!-- Entry Form -->
+    <div class="entry-card" id="ad-entry">
+      <h3><span class="dot"></span> Log Today's Ad Metrics</h3>
+      <div class="entry-grid">
+        <div class="entry-field"><label>Date</label><input type="date" id="ad-date"></div>
+        <div class="entry-field"><label>Ad Spend ($)</label><input type="number" id="ad-in-spend" placeholder="50.00" step="0.01" min="0"></div>
+        <div class="entry-field"><label>$18 Sales</label><input type="number" id="ad-in-t18" placeholder="0" min="0" value="0"></div>
+        <div class="entry-field"><label>$47 Sales</label><input type="number" id="ad-in-t47" placeholder="0" min="0" value="0"></div>
+        <div class="entry-field"><label>$333 Sales</label><input type="number" id="ad-in-t333" placeholder="0" min="0" value="0"></div>
+      </div>
+      <div class="entry-actions">
+        <button class="btn-save" onclick="saveAds()">Save Ad Metrics</button>
+        <span class="entry-status" id="ad-status"></span>
+      </div>
+      <div class="entry-existing" id="ad-existing"></div>
+    </div>
+
+    <div class="date-filter">
+      <label>Period:</label>
+      <select id="ad-period" onchange="filterAds()">
+        <option value="all">All Time</option><option value="30">Last 30 Days</option><option value="14">Last 14 Days</option><option value="7">Last 7 Days</option>
+      </select>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">Total Spend</div><div class="kpi-value" id="ad-spend"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Revenue (First Payment)</div><div class="kpi-value" id="ad-rev"></div></div>
+      <div class="kpi-card"><div class="kpi-label">ROAS</div><div class="kpi-value" id="ad-roas"></div><div class="kpi-change neutral" id="ad-roas-note"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Conversions</div><div class="kpi-value" id="ad-conv"></div></div>
+      <div class="kpi-card"><div class="kpi-label">CAC</div><div class="kpi-value" id="ad-cac"></div></div>
+      <div class="kpi-card"><div class="kpi-label">Days with Sales</div><div class="kpi-value" id="ad-cr"></div><div class="kpi-change neutral" id="ad-cr-note"></div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card"><h3>Daily Ad Spend</h3><div class="chart-wrap"><canvas id="ad-spend-chart"></canvas></div></div>
+      <div class="chart-card"><h3>Conversions by Tier</h3><div class="chart-wrap"><canvas id="ad-tier-chart"></canvas></div></div>
+    </div>
+    <div class="chart-row"><div class="chart-card full-width"><h3>Weekly ROAS Trend</h3><div class="chart-wrap"><canvas id="ad-roas-chart"></canvas></div></div></div>
+    <div class="chart-row"><div class="chart-card full-width"><h3>Cumulative Spend vs Revenue</h3><div class="chart-wrap"><canvas id="ad-cumulative-chart"></canvas></div></div></div>
+    <div class="export-bar"><button class="btn-export" onclick="exportCSV('ads')">Export Ads CSV</button></div>
+    <div class="table-card"><h3>Weekly Breakdown</h3>
+      <table><thead><tr><th>Week</th><th>Spend</th><th>Revenue</th><th>ROAS</th><th>Conversions</th><th>$18</th><th>$47</th><th>$333</th><th>CAC</th></tr></thead><tbody id="ad-weekly-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- ═══════════ TASKS ═══════════ -->
+  <div id="tab-tasks" class="tab-panel">
+    <!-- Date Navigation -->
+    <div class="task-nav">
+      <button onclick="taskDateShift(-1)">&larr; Previous Day</button>
+      <div>
+        <div class="task-date-display" id="task-date-display"></div>
+        <div class="task-date-sub" id="task-date-sub"></div>
+      </div>
+      <button onclick="taskDateShift(1)">Next Day &rarr;</button>
+      <button onclick="taskGoToday()" style="margin-left:auto;background:var(--accent);color:#fff;border-color:var(--accent)">Today</button>
+    </div>
+
+    <!-- Daily Summary -->
+    <div class="task-summary">
+      <div class="task-summary-card"><div class="ts-value" id="ts-done">0</div><div class="ts-label">Done Today</div></div>
+      <div class="task-summary-card"><div class="ts-value" id="ts-total">0</div><div class="ts-label">Total Tasks</div></div>
+      <div class="task-summary-card"><div class="ts-value" id="ts-pct">0%</div><div class="ts-label">Completion</div></div>
+      <div class="task-summary-card"><div class="ts-value" id="ts-streak">0</div><div class="ts-label">Day Streak</div></div>
+    </div>
+
+    <!-- Task Categories -->
+    <div class="task-categories" id="task-categories"></div>
+
+    <!-- Add Custom Task -->
+    <div class="task-add-row" style="margin-top:20px;background:var(--bg-card);border-radius:12px;padding:16px 20px;box-shadow:var(--shadow)">
+      <input type="text" id="custom-task-input" placeholder="Add a custom task for today..." onkeydown="if(event.key==='Enter')addCustomTask()">
+      <select id="custom-task-cat">
+        <option value="daily">Daily Ops</option>
+        <option value="content">Content</option>
+        <option value="growth">Growth</option>
+        <option value="product">Product</option>
+      </select>
+      <button onclick="addCustomTask()">+ Add Task</button>
+    </div>
+
+    <!-- Habit Heatmap (last 35 days) -->
+    <div class="history-card">
+      <h3>Activity Heatmap — Last 5 Weeks</h3>
+      <div class="history-grid" id="task-heatmap"></div>
+    </div>
+
+    <!-- History Table -->
+    <div class="table-card" style="margin-top:16px">
+      <h3>Recent History</h3>
+      <table>
+        <thead><tr><th>Date</th><th>Done</th><th>Total</th><th>%</th><th>Tasks Completed</th></tr></thead>
+        <tbody id="task-history-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════ SEED DATA (from CSV imports) ══════════
+const SEED_DAILY=[{date:"2026-02-27",traffic:54,discovery:566,profile_activity:34,group_activity:142,mrr:2551,retention:88.3,members:null,one_thing:""},{date:"2026-02-28",traffic:52,discovery:551,profile_activity:28,group_activity:83,mrr:2515,retention:88.3,members:156,one_thing:"Build a new AI tool"},{date:"2026-03-01",traffic:37,discovery:528,profile_activity:38,group_activity:74,mrr:2544,retention:93.4,members:155,one_thing:""},{date:"2026-03-02",traffic:53,discovery:528,profile_activity:23,group_activity:85,mrr:2638,retention:92.7,members:157,one_thing:""},{date:"2026-03-03",traffic:54,discovery:512,profile_activity:54,group_activity:97,mrr:2609,retention:93,members:158,one_thing:"Test More Ads"},{date:"2026-03-04",traffic:34,discovery:512,profile_activity:25,group_activity:47,mrr:2571,retention:93,members:157,one_thing:"Ship a product to the community"},{date:"2026-03-05",traffic:27,discovery:519,profile_activity:14,group_activity:46,mrr:2571,retention:97,members:157,one_thing:"Test new ad set for Claude"},{date:"2026-03-06",traffic:42,discovery:512,profile_activity:22,group_activity:84,mrr:2609,retention:93,members:159,one_thing:"Get a new training out to the community"}];
+
+const SEED_ADS=[{date:"2025-12-01",ad_spend:52.39,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-02",ad_spend:30.31,t18:0,t47:1,t333:0,old_annual:0},{date:"2025-12-03",ad_spend:24.02,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-04",ad_spend:35.85,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-05",ad_spend:30.69,t18:1,t47:0,t333:0,old_annual:0},{date:"2025-12-06",ad_spend:34.03,t18:0,t47:0,t333:0,old_annual:1},{date:"2025-12-07",ad_spend:45.58,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-08",ad_spend:34.22,t18:0,t47:1,t333:0,old_annual:0},{date:"2025-12-09",ad_spend:32.88,t18:1,t47:0,t333:0,old_annual:0},{date:"2025-12-10",ad_spend:34.18,t18:0,t47:0,t333:1,old_annual:0},{date:"2025-12-11",ad_spend:36.5,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-12",ad_spend:30.33,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-13",ad_spend:39.46,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-14",ad_spend:38.19,t18:1,t47:0,t333:0,old_annual:0},{date:"2025-12-15",ad_spend:34.85,t18:1,t47:0,t333:0,old_annual:0},{date:"2025-12-16",ad_spend:4.38,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-17",ad_spend:17.06,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-18",ad_spend:31.2,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-19",ad_spend:36.44,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-20",ad_spend:28.99,t18:0,t47:1,t333:0,old_annual:0},{date:"2025-12-21",ad_spend:39.48,t18:0,t47:1,t333:0,old_annual:0},{date:"2025-12-22",ad_spend:38.24,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-23",ad_spend:33,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-24",ad_spend:35.33,t18:1,t47:0,t333:0,old_annual:0},{date:"2025-12-25",ad_spend:32.43,t18:1,t47:0,t333:0,old_annual:0},{date:"2025-12-26",ad_spend:30.09,t18:2,t47:0,t333:0,old_annual:0},{date:"2025-12-27",ad_spend:37.27,t18:0,t47:0,t333:0,old_annual:0},{date:"2025-12-28",ad_spend:87.76,t18:2,t47:0,t333:0,old_annual:0},{date:"2025-12-29",ad_spend:35.14,t18:2,t47:0,t333:0,old_annual:0},{date:"2025-12-30",ad_spend:37.67,t18:1,t47:0,t333:0,old_annual:0},{date:"2025-12-31",ad_spend:39.99,t18:0,t47:0,t333:0,old_annual:1},{date:"2026-01-01",ad_spend:47.48,t18:0,t47:0,t333:1,old_annual:0},{date:"2026-01-02",ad_spend:47.36,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-03",ad_spend:42.15,t18:0,t47:3,t333:1,old_annual:0},{date:"2026-01-04",ad_spend:107.83,t18:0,t47:1,t333:0,old_annual:0},{date:"2026-01-05",ad_spend:92.99,t18:0,t47:1,t333:0,old_annual:0},{date:"2026-01-06",ad_spend:52.02,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-07",ad_spend:57.26,t18:0,t47:1,t333:0,old_annual:0},{date:"2026-01-08",ad_spend:53.93,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-09",ad_spend:45.71,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-10",ad_spend:18.02,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-11",ad_spend:20.62,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-12",ad_spend:44.29,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-13",ad_spend:36.02,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-14",ad_spend:6.64,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-16",ad_spend:18.29,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-17",ad_spend:30.02,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-18",ad_spend:29.96,t18:1,t47:0,t333:0,old_annual:0},{date:"2026-01-19",ad_spend:37.41,t18:0,t47:1,t333:0,old_annual:0},{date:"2026-01-20",ad_spend:37.46,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-21",ad_spend:42.06,t18:1,t47:2,t333:0,old_annual:0},{date:"2026-01-22",ad_spend:42.07,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-23",ad_spend:39.22,t18:1,t47:0,t333:0,old_annual:0},{date:"2026-01-24",ad_spend:34.77,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-01-25",ad_spend:37.98,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-02-08",ad_spend:45.36,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-02-09",ad_spend:38.11,t18:1,t47:2,t333:0,old_annual:0},{date:"2026-02-10",ad_spend:53.03,t18:0,t47:0,t333:1,old_annual:0},{date:"2026-02-11",ad_spend:40.08,t18:2,t47:1,t333:0,old_annual:0},{date:"2026-02-12",ad_spend:85.35,t18:0,t47:1,t333:0,old_annual:0},{date:"2026-02-13",ad_spend:78.32,t18:0,t47:1,t333:0,old_annual:0},{date:"2026-02-14",ad_spend:57.36,t18:0,t47:0,t333:1,old_annual:0},{date:"2026-02-15",ad_spend:67,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-02-16",ad_spend:60.23,t18:0,t47:1,t333:0,old_annual:0},{date:"2026-02-17",ad_spend:58.49,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-02-18",ad_spend:68.99,t18:0,t47:1,t333:0,old_annual:0},{date:"2026-02-19",ad_spend:77.02,t18:0,t47:1,t333:0,old_annual:0},{date:"2026-02-20",ad_spend:72.97,t18:0,t47:4,t333:0,old_annual:0},{date:"2026-02-21",ad_spend:35.52,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-02-22",ad_spend:61.19,t18:0,t47:0,t333:1,old_annual:0},{date:"2026-02-23",ad_spend:64.89,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-02-24",ad_spend:75.88,t18:0,t47:1,t333:0,old_annual:0},{date:"2026-02-25",ad_spend:75.9,t18:0,t47:2,t333:0,old_annual:0},{date:"2026-02-26",ad_spend:94.4,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-02-27",ad_spend:100.44,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-02-28",ad_spend:43.84,t18:0,t47:2,t333:0,old_annual:0},{date:"2026-03-01",ad_spend:113.46,t18:0,t47:2,t333:0,old_annual:0},{date:"2026-03-02",ad_spend:100.75,t18:1,t47:0,t333:0,old_annual:0},{date:"2026-03-03",ad_spend:67.47,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-03-04",ad_spend:46.08,t18:0,t47:0,t333:0,old_annual:0},{date:"2026-03-06",ad_spend:100.56,t18:2,t47:0,t333:0,old_annual:0}];
+
+// ══════════ DATA LAYER (localStorage + seed merge) ══════════
+const STORE_DAILY = 'acb_daily_v1';
+const STORE_ADS = 'acb_ads_v1';
+const TARGET_MRR = 5218;
+
+function loadData(key, seed) {
+  const stored = JSON.parse(localStorage.getItem(key) || '[]');
+  // Merge: seed provides baseline, stored overrides by date
+  const map = {};
+  seed.forEach(r => map[r.date] = {...r});
+  stored.forEach(r => map[r.date] = {...r});
+  return Object.values(map).sort((a,b) => a.date.localeCompare(b.date));
+}
+
+function saveData(key, data) {
+  // Only save records that differ from or don't exist in seed
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+let DAILY = loadData(STORE_DAILY, SEED_DAILY);
+let ADS_RAW = loadData(STORE_ADS, SEED_ADS);
+
+// Enrich ads with computed fields
+function enrichAds(data) {
+  return data.map(d => {
+    const rev = (d.t18||0)*18 + (d.t47||0)*47 + (d.t333||0)*333 + (d.old_annual||0)*333;
+    const conv = (d.t18||0) + (d.t47||0) + (d.t333||0) + (d.old_annual||0);
+    return {...d, revenue: rev, total_conversions: conv};
+  });
+}
+let ADS = enrichAds(ADS_RAW);
+
+// Weekly aggregation
+function buildWeekly(data) {
+  const weeks = {};
+  data.forEach(d => {
+    const dt = new Date(d.date + 'T12:00:00');
+    const jan1 = new Date(dt.getFullYear(), 0, 1);
+    const dayOfYear = Math.floor((dt - jan1) / 86400000);
+    const wk = Math.ceil((dayOfYear + jan1.getDay() + 1) / 7);
+    const key = dt.getFullYear() + '-W' + String(wk).padStart(2,'0');
+    if (!weeks[key]) weeks[key] = {week:key,spend:0,revenue:0,conversions:0,t18:0,t47:0,t333:0,old_annual:0};
+    const w = weeks[key];
+    w.spend += d.ad_spend; w.revenue += d.revenue; w.conversions += d.total_conversions;
+    w.t18 += d.t18||0; w.t47 += d.t47||0; w.t333 += d.t333||0; w.old_annual += d.old_annual||0;
+  });
+  return Object.values(weeks).map(w => ({
+    ...w, spend: Math.round(w.spend*100)/100,
+    roas: w.spend > 0 ? Math.round(w.revenue/w.spend*100)/100 : 0,
+    cac: w.conversions > 0 ? Math.round(w.spend/w.conversions*100)/100 : 0
+  })).sort((a,b) => a.week.localeCompare(b.week));
+}
+
+// ══════════ HELPERS ══════════
+const C = {accent:'#eb1495',blue:'#00bfff',green:'#00ccb1',amber:'#fedc01',red:'#7624db',purple:'#9250e2',teal:'#66ffeb'};
+function $(id){return document.getElementById(id)}
+function fmt(n,p='$'){return p+n.toLocaleString(undefined,{maximumFractionDigits:0})}
+function fmtD(n,p='$'){return p+n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function sd(d){const p=d.split('-');return parseInt(p[1])+'/'+parseInt(p[2])}
+function today(){return new Date().toISOString().slice(0,10)}
+
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function flash(id,msg){const el=$(id);el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);}
+
+// ══════════ SAVE FUNCTIONS ══════════
+function saveSkool() {
+  const date = $('sk-date').value;
+  if (!date) { alert('Please select a date'); return; }
+  const entry = {
+    date,
+    mrr: parseFloat($('sk-in-mrr').value) || 0,
+    retention: parseFloat($('sk-in-ret').value) || 0,
+    members: parseInt($('sk-in-mem').value) || 0,
+    traffic: parseInt($('sk-in-traffic').value) || 0,
+    discovery: parseInt($('sk-in-disc').value) || 0,
+    profile_activity: parseInt($('sk-in-prof').value) || 0,
+    group_activity: parseInt($('sk-in-grp').value) || 0,
+    one_thing: $('sk-in-one').value.trim()
+  };
+  // Update or insert
+  const idx = DAILY.findIndex(d => d.date === date);
+  if (idx >= 0) DAILY[idx] = entry; else DAILY.push(entry);
+  DAILY.sort((a,b) => a.date.localeCompare(b.date));
+  saveData(STORE_DAILY, DAILY);
+  flash('sk-status', 'Saved! Metrics logged for ' + date);
+  checkExisting();
+  rebuildAll();
+}
+
+function saveAds() {
+  const date = $('ad-date').value;
+  if (!date) { alert('Please select a date'); return; }
+  const spend = parseFloat($('ad-in-spend').value);
+  if (isNaN(spend)) { alert('Please enter ad spend'); return; }
+  const entry = {
+    date,
+    ad_spend: spend,
+    t18: parseInt($('ad-in-t18').value) || 0,
+    t47: parseInt($('ad-in-t47').value) || 0,
+    t333: parseInt($('ad-in-t333').value) || 0,
+    old_annual: 0
+  };
+  const idx = ADS_RAW.findIndex(d => d.date === date);
+  if (idx >= 0) ADS_RAW[idx] = entry; else ADS_RAW.push(entry);
+  ADS_RAW.sort((a,b) => a.date.localeCompare(b.date));
+  ADS = enrichAds(ADS_RAW);
+  saveData(STORE_ADS, ADS_RAW);
+  flash('ad-status', 'Saved! Ad metrics logged for ' + date);
+  checkExisting();
+  rebuildAll();
+}
+
+function checkExisting() {
+  const skDate = $('sk-date').value;
+  const skRow = DAILY.find(d => d.date === skDate);
+  $('sk-existing').textContent = skRow ? 'Data exists for this date — saving will overwrite.' : '';
+  if (skRow) {
+    $('sk-in-mrr').placeholder = skRow.mrr;
+    $('sk-in-ret').placeholder = skRow.retention;
+    $('sk-in-mem').placeholder = skRow.members || '';
+    $('sk-in-traffic').placeholder = skRow.traffic;
+    $('sk-in-disc').placeholder = skRow.discovery;
+    $('sk-in-prof').placeholder = skRow.profile_activity;
+    $('sk-in-grp').placeholder = skRow.group_activity;
+  }
+  const adDate = $('ad-date').value;
+  const adRow = ADS_RAW.find(d => d.date === adDate);
+  $('ad-existing').textContent = adRow ? 'Data exists for this date — saving will overwrite.' : '';
+}
+
+// ══════════ EXPORT ══════════
+function exportCSV(type) {
+  let csv, filename;
+  if (type === 'skool') {
+    csv = 'date,mrr,retention,members,traffic,discovery,profile_activity,group_activity,one_thing\n';
+    DAILY.forEach(d => csv += `${d.date},${d.mrr},${d.retention},${d.members||''},${d.traffic},${d.discovery},${d.profile_activity},${d.group_activity},"${d.one_thing||''}"\n`);
+    filename = 'skool_metrics_export.csv';
+  } else {
+    csv = 'date,ad_spend,t18,t47,t333,revenue,total_conversions\n';
+    ADS.forEach(d => csv += `${d.date},${d.ad_spend},${d.t18},${d.t47},${d.t333},${d.revenue},${d.total_conversions}\n`);
+    filename = 'ad_metrics_export.csv';
+  }
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+// ══════════ CHART INSTANCES ══════════
+let charts = {};
+
+function destroyCharts() {
+  Object.values(charts).forEach(c => { if (c) c.destroy(); });
+  charts = {};
+}
+
+// ══════════ RENDER ══════════
+function rebuildAll() {
+  destroyCharts();
+  renderOverview();
+  renderSkool();
+  renderAds();
+  renderTasks();
+  const latest = DAILY[DAILY.length-1];
+  $('last-updated').textContent = 'Last data: ' + (latest ? latest.date : '—') + ' | ' + DAILY.length + ' days tracked';
+}
+
+function renderOverview() {
+  const latest = DAILY[DAILY.length-1] || {};
+  const mrr = latest.mrr || 0;
+  const pct = Math.min((mrr/TARGET_MRR)*100,100);
+  $('goal-fill').style.width = pct+'%';
+  $('goal-pct').textContent = pct.toFixed(1)+'% of goal';
+  $('goal-current-label').textContent = 'Current: '+fmt(mrr);
+  $('goal-target-label').textContent = 'Target: '+fmt(TARGET_MRR);
+
+  $('ov-mrr').textContent = fmt(mrr);
+  if (DAILY.length >= 2) {
+    const d0 = DAILY[0].mrr, ch = ((mrr-d0)/d0*100).toFixed(1);
+    $('ov-mrr-change').textContent = (ch>=0?'+':'')+ch+'% since '+DAILY[0].date;
+    $('ov-mrr-change').className = 'kpi-change '+(ch>=0?'positive':'negative');
+  }
+
+  $('ov-members').textContent = latest.members || '—';
+  $('ov-members-change').textContent = 'active members';
+  $('ov-retention').textContent = (latest.retention||0)+'%';
+  $('ov-retention-change').textContent = 'current rate';
+
+  const ts = ADS.reduce((s,d)=>s+d.ad_spend,0), tr = ADS.reduce((s,d)=>s+d.revenue,0), tc = ADS.reduce((s,d)=>s+d.total_conversions,0);
+  const t47c = ADS.reduce((s,d)=>s+(d.t47||0),0), t333c = ADS.reduce((s,d)=>s+(d.t333||0)+(d.old_annual||0),0);
+  $('ov-roas').textContent = (ts>0?(tr/ts).toFixed(2):'0')+'x';
+  $('ov-roas-note').textContent = fmt(ts)+' spent total';
+  $('ov-conv').textContent = tc;
+  $('ov-conv-note').textContent = t47c+' premium, '+t333c+' annual';
+  $('ov-cac').textContent = tc>0 ? fmtD(ts/tc) : '—';
+  $('ov-cac-note').textContent = 'cost per new member';
+
+  charts.ovMrr = new Chart($('ov-mrr-chart'),{type:'line',data:{labels:DAILY.map(d=>sd(d.date)),datasets:[{label:'MRR',data:DAILY.map(d=>d.mrr),borderColor:C.accent,backgroundColor:C.accent+'20',fill:true,tension:.3,pointRadius:DAILY.length>30?0:4,pointHoverRadius:6,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.parsed.y.toLocaleString()}}},scales:{y:{beginAtZero:false,ticks:{callback:v=>'$'+v.toLocaleString()}},x:{grid:{display:false},ticks:{maxTicksLimit:12}}}}});
+
+  const t18t = ADS.reduce((s,d)=>s+(d.t18||0),0);
+  charts.ovTier = new Chart($('ov-tier-chart'),{type:'doughnut',data:{labels:['$18/mo ('+t18t+')','$47/mo ('+t47c+')','$333/yr ('+t333c+')'],datasets:[{data:[t18t,t47c,t333c],backgroundColor:[C.amber+'CC',C.accent+'CC',C.green+'CC'],borderColor:'#fff',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'right',labels:{usePointStyle:true,padding:16,font:{size:13}}}}}});
+
+  const WK = buildWeekly(ADS);
+  charts.ovWeekly = new Chart($('ov-weekly-chart'),{type:'bar',data:{labels:WK.map(w=>w.week),datasets:[{label:'Spend',data:WK.map(w=>w.spend),backgroundColor:C.blue+'BB',borderRadius:4},{label:'Revenue',data:WK.map(w=>w.revenue),backgroundColor:C.green+'BB',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{usePointStyle:true,padding:16}},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+c.parsed.y.toLocaleString()}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'$'+v}},x:{grid:{display:false}}}}});
+}
+
+function renderSkool() {
+  const l = DAILY[DAILY.length-1] || {};
+  $('sk-mrr').textContent = fmt(l.mrr||0);
+  $('sk-ret').textContent = (l.retention||0)+'%';
+  $('sk-mem').textContent = l.members||'—';
+  $('sk-traffic').textContent = Math.round(DAILY.reduce((s,d)=>s+d.traffic,0)/DAILY.length);
+  $('sk-disc').textContent = Math.round(DAILY.reduce((s,d)=>s+d.discovery,0)/DAILY.length);
+
+  const lb = DAILY.map(d=>sd(d.date));
+  const pr = DAILY.length > 30 ? 0 : 4;
+
+  charts.skMrr = new Chart($('sk-mrr-chart'),{type:'line',data:{labels:lb,datasets:[{label:'MRR',data:DAILY.map(d=>d.mrr),borderColor:C.accent,backgroundColor:C.accent+'15',fill:true,tension:.3,pointRadius:pr,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.parsed.y}}},scales:{y:{beginAtZero:false,ticks:{callback:v=>'$'+v}},x:{grid:{display:false},ticks:{maxTicksLimit:12}}}}});
+
+  charts.skRet = new Chart($('sk-ret-chart'),{type:'line',data:{labels:lb,datasets:[{label:'Retention %',data:DAILY.map(d=>d.retention),borderColor:C.green,backgroundColor:C.green+'15',fill:true,tension:.3,pointRadius:pr,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:80,max:100,ticks:{callback:v=>v+'%'}},x:{grid:{display:false},ticks:{maxTicksLimit:12}}}}});
+
+  charts.skTraffic = new Chart($('sk-traffic-chart'),{type:'line',data:{labels:lb,datasets:[{label:'Traffic',data:DAILY.map(d=>d.traffic),borderColor:C.blue,tension:.3,pointRadius:Math.min(pr,3),borderWidth:2},{label:'Discovery',data:DAILY.map(d=>d.discovery),borderColor:C.amber,tension:.3,pointRadius:Math.min(pr,3),borderWidth:2,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{usePointStyle:true}}},scales:{y:{beginAtZero:true,position:'left',title:{display:true,text:'Traffic'}},y1:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false},title:{display:true,text:'Discovery'}},x:{grid:{display:false},ticks:{maxTicksLimit:12}}}}});
+
+  charts.skAct = new Chart($('sk-activity-chart'),{type:'bar',data:{labels:lb,datasets:[{label:'Profile',data:DAILY.map(d=>d.profile_activity),backgroundColor:C.purple+'BB',borderRadius:4},{label:'Group',data:DAILY.map(d=>d.group_activity),backgroundColor:C.teal+'BB',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{usePointStyle:true}}},scales:{y:{beginAtZero:true},x:{grid:{display:false},ticks:{maxTicksLimit:12}}}}});
+
+  let h='';[...DAILY].reverse().forEach(d=>{h+=`<tr><td>${d.date}</td><td>${fmt(d.mrr)}</td><td>${d.retention}%</td><td>${d.members||'—'}</td><td>${d.traffic}</td><td>${d.discovery}</td><td>${d.profile_activity}</td><td>${d.group_activity}</td><td style="color:var(--text-secondary);font-style:italic">${d.one_thing||'—'}</td></tr>`;});
+  $('sk-table-body').innerHTML = h;
+}
+
+function renderAds() {
+  const lb = ADS.map(d=>sd(d.date));
+  const ptsz = ADS.length > 40 ? 0 : 3;
+
+  charts.adSpend = new Chart($('ad-spend-chart'),{type:'bar',data:{labels:lb,datasets:[{label:'Ad Spend',data:ADS.map(d=>d.ad_spend),backgroundColor:C.blue+'99',borderRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.parsed.y.toFixed(2)}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'$'+v}},x:{grid:{display:false},ticks:{maxTicksLimit:15}}}}});
+
+  charts.adTier = new Chart($('ad-tier-chart'),{type:'bar',data:{labels:lb,datasets:[{label:'$18',data:ADS.map(d=>d.t18),backgroundColor:C.amber+'CC',borderRadius:2},{label:'$47',data:ADS.map(d=>d.t47),backgroundColor:C.accent+'CC',borderRadius:2},{label:'$333',data:ADS.map(d=>d.t333+(d.old_annual||0)),backgroundColor:C.green+'CC',borderRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{usePointStyle:true}}},scales:{y:{beginAtZero:true,stacked:true,ticks:{stepSize:1}},x:{stacked:true,grid:{display:false},ticks:{maxTicksLimit:15}}}}});
+
+  const WK = buildWeekly(ADS);
+  charts.adRoas = new Chart($('ad-roas-chart'),{type:'line',data:{labels:WK.map(w=>w.week),datasets:[{label:'ROAS',data:WK.map(w=>w.roas),borderColor:C.accent,backgroundColor:C.accent+'20',fill:true,tension:.3,pointRadius:5,pointHoverRadius:8,borderWidth:2.5},{label:'Breakeven (1.0x)',data:WK.map(()=>1),borderColor:'#dc262680',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{usePointStyle:true}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y+'x'}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v+'x'}},x:{grid:{display:false}}}}});
+
+  let cs=0,cr=0;const ca=[],cb=[];ADS.forEach(d=>{cs+=d.ad_spend;cr+=d.revenue;ca.push(Math.round(cs));cb.push(cr);});
+  charts.adCum = new Chart($('ad-cumulative-chart'),{type:'line',data:{labels:lb,datasets:[{label:'Cumulative Spend',data:ca,borderColor:C.red,borderWidth:2,tension:.2,pointRadius:0,fill:false},{label:'Cumulative Revenue',data:cb,borderColor:C.green,borderWidth:2,tension:.2,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{usePointStyle:true}},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+c.parsed.y.toLocaleString()}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'$'+v.toLocaleString()}},x:{grid:{display:false},ticks:{maxTicksLimit:15}}}}});
+
+  let h='';[...WK].reverse().forEach(w=>{const rc=w.roas>=1.5?'pill-green':w.roas>=1?'pill-amber':w.roas>0?'pill-red':'';h+=`<tr><td><strong>${w.week}</strong></td><td>${fmtD(w.spend)}</td><td>${fmt(w.revenue)}</td><td><span class="pill ${rc}">${w.roas}x</span></td><td>${w.conversions}</td><td>${w.t18||'—'}</td><td>${w.t47||'—'}</td><td>${(w.t333+(w.old_annual||0))||'—'}</td><td>${w.conversions>0?fmtD(w.cac):'—'}</td></tr>`;});
+  $('ad-weekly-body').innerHTML = h;
+
+  filterAds();
+}
+
+function filterAds() {
+  const period = $('ad-period').value;
+  const data = period === 'all' ? ADS : ADS.filter(d => { const c = new Date(); c.setDate(c.getDate()-parseInt(period)); return d.date >= c.toISOString().slice(0,10); });
+  const ts=data.reduce((s,d)=>s+d.ad_spend,0),tr=data.reduce((s,d)=>s+d.revenue,0),tc=data.reduce((s,d)=>s+d.total_conversions,0),dc=data.filter(d=>d.total_conversions>0).length,td=data.length;
+  $('ad-spend').textContent=fmtD(ts);$('ad-rev').textContent=fmt(tr);
+  $('ad-roas').textContent=(ts>0?(tr/ts).toFixed(2):'0')+'x';
+  $('ad-roas-note').textContent=tr>ts?'Profitable':'Below breakeven';$('ad-roas-note').className='kpi-change '+(tr>ts?'positive':'negative');
+  $('ad-conv').textContent=tc;$('ad-cac').textContent=tc>0?fmtD(ts/tc):'—';
+  $('ad-cr').textContent=dc+'/'+td;$('ad-cr-note').textContent=((dc/td)*100).toFixed(0)+'% of days had sales';
+}
+
+// ══════════ DAILY TASK TRACKER ══════════
+const STORE_TASKS = 'acb_tasks_v1';
+const STORE_CUSTOM = 'acb_custom_tasks_v1';
+
+// Default recurring tasks by category
+const DEFAULT_TASKS = [
+  {id:'daily-skool',   cat:'daily',   label:'Enter Skool metrics'},
+  {id:'daily-ads',     cat:'daily',   label:'Enter ad metrics'},
+  {id:'daily-engage',  cat:'daily',   label:'Engage in Skool (reply to members, start a convo)'},
+  {id:'content-skool', cat:'content', label:'Post or share in a Skool community'},
+  {id:'content-yt',    cat:'content', label:'Work on YouTube video (script, record, edit, or publish)'},
+  {id:'content-email', cat:'content', label:'Send or draft email to your list'},
+  {id:'growth-ads',    cat:'growth',  label:'Review & optimize ad creatives or targeting'},
+  {id:'growth-collab', cat:'growth',  label:'Reach out for collab, summit, or audience share'},
+  {id:'product-tool',  cat:'product', label:'Build or ship a new tool to the Plug & Play library'},
+  {id:'product-train', cat:'product', label:'Create or improve training content'},
+];
+
+const CATEGORIES = {
+  daily:   {name:'Daily Ops',          icon:'&#9881;'},
+  content: {name:'Content & Visibility',icon:'&#9997;'},
+  growth:  {name:'Growth Moves',       icon:'&#128640;'},
+  product: {name:'Product & Value',    icon:'&#128736;'},
+};
+
+let taskViewDate = today();
+
+function getCustomTasks() {
+  return JSON.parse(localStorage.getItem(STORE_CUSTOM) || '[]');
+}
+function saveCustomTasks(list) {
+  localStorage.setItem(STORE_CUSTOM, JSON.stringify(list));
+}
+
+function getAllTasks() {
+  const customs = getCustomTasks();
+  return [...DEFAULT_TASKS, ...customs];
+}
+
+function getTaskState() {
+  return JSON.parse(localStorage.getItem(STORE_TASKS) || '{}');
+}
+function saveTaskState(state) {
+  localStorage.setItem(STORE_TASKS, JSON.stringify(state));
+}
+
+function toggleTask(taskId) {
+  const state = getTaskState();
+  if (!state[taskViewDate]) state[taskViewDate] = {};
+  state[taskViewDate][taskId] = !state[taskViewDate][taskId];
+  saveTaskState(state);
+  renderTasks();
+}
+
+function addCustomTask() {
+  const input = $('custom-task-input');
+  const cat = $('custom-task-cat').value;
+  const label = input.value.trim();
+  if (!label) return;
+  const customs = getCustomTasks();
+  const id = 'custom-' + Date.now();
+  customs.push({id, cat, label});
+  saveCustomTasks(customs);
+  // Auto-check it for today
+  const state = getTaskState();
+  if (!state[taskViewDate]) state[taskViewDate] = {};
+  state[taskViewDate][id] = false;
+  saveTaskState(state);
+  input.value = '';
+  renderTasks();
+}
+
+function removeCustomTask(taskId, event) {
+  event.stopPropagation();
+  const customs = getCustomTasks().filter(t => t.id !== taskId);
+  saveCustomTasks(customs);
+  renderTasks();
+}
+
+function taskDateShift(delta) {
+  const d = new Date(taskViewDate + 'T12:00:00');
+  d.setDate(d.getDate() + delta);
+  taskViewDate = d.toISOString().slice(0,10);
+  renderTasks();
+}
+
+function taskGoToday() {
+  taskViewDate = today();
+  renderTasks();
+}
+
+function getStreak(taskId) {
+  const state = getTaskState();
+  let streak = 0;
+  const d = new Date(today() + 'T12:00:00');
+  for (let i = 0; i < 90; i++) {
+    const key = d.toISOString().slice(0,10);
+    if (state[key] && state[key][taskId]) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function getCompletionForDate(dateStr) {
+  const state = getTaskState();
+  const dayState = state[dateStr] || {};
+  const tasks = getAllTasks();
+  const done = tasks.filter(t => dayState[t.id]).length;
+  return {done, total: tasks.length, pct: tasks.length > 0 ? Math.round((done / tasks.length) * 100) : 0};
+}
+
+function getDayStreak() {
+  let streak = 0;
+  const d = new Date(today() + 'T12:00:00');
+  for (let i = 0; i < 365; i++) {
+    const key = d.toISOString().slice(0,10);
+    const comp = getCompletionForDate(key);
+    if (comp.done > 0) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function renderTasks() {
+  const state = getTaskState();
+  const dayState = state[taskViewDate] || {};
+  const tasks = getAllTasks();
+  const isToday = taskViewDate === today();
+
+  // Date display
+  const dObj = new Date(taskViewDate + 'T12:00:00');
+  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  $('task-date-display').textContent = dayNames[dObj.getDay()] + ', ' + monthNames[dObj.getMonth()] + ' ' + dObj.getDate();
+  $('task-date-sub').textContent = isToday ? 'Today' : taskViewDate;
+
+  // Summary
+  const comp = getCompletionForDate(taskViewDate);
+  $('ts-done').textContent = comp.done;
+  $('ts-total').textContent = comp.total;
+  $('ts-pct').textContent = comp.pct + '%';
+  $('ts-streak').textContent = getDayStreak();
+
+  // Categories
+  const catDiv = $('task-categories');
+  let html = '';
+  for (const [catId, catInfo] of Object.entries(CATEGORIES)) {
+    const catTasks = tasks.filter(t => t.cat === catId);
+    if (catTasks.length === 0) continue;
+    const catDone = catTasks.filter(t => dayState[t.id]).length;
+    html += `<div class="task-category">`;
+    html += `<h3><span class="cat-icon">${catInfo.icon}</span> ${catInfo.name} <span class="cat-progress">${catDone}/${catTasks.length}</span></h3>`;
+    html += `<ul class="task-list">`;
+    catTasks.forEach(t => {
+      const checked = dayState[t.id] ? true : false;
+      const streak = getStreak(t.id);
+      const isCustom = t.id.startsWith('custom-');
+      html += `<li class="task-item ${checked ? 'checked' : ''}" onclick="toggleTask('${t.id}')">`;
+      html += `<input type="checkbox" ${checked ? 'checked' : ''} onclick="event.stopPropagation();toggleTask('${t.id}')">`;
+      html += `<label>${t.label}</label>`;
+      if (streak > 1) html += `<span class="task-streak">${streak}-day streak</span>`;
+      if (isCustom) html += `<button onclick="removeCustomTask('${t.id}',event)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:4px" title="Remove task">&times;</button>`;
+      html += `</li>`;
+    });
+    html += `</ul></div>`;
+  }
+  catDiv.innerHTML = html;
+
+  // Heatmap (last 35 days)
+  const hm = $('task-heatmap');
+  let hmHtml = '';
+  const dayAbbr = ['S','M','T','W','T','F','S'];
+  dayAbbr.forEach(d => hmHtml += `<div class="history-cell hdr">${d}</div>`);
+
+  const startDate = new Date(today() + 'T12:00:00');
+  startDate.setDate(startDate.getDate() - 34);
+  // Pad to start on Sunday
+  const padStart = startDate.getDay();
+  for (let i = 0; i < padStart; i++) hmHtml += `<div class="history-cell" style="visibility:hidden"></div>`;
+
+  for (let i = 0; i < 35; i++) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    const key = d.toISOString().slice(0,10);
+    const c = getCompletionForDate(key);
+    let level = 0;
+    if (c.total > 0) {
+      const r = c.done / c.total;
+      if (r > 0) level = 1;
+      if (r >= 0.25) level = 2;
+      if (r >= 0.5) level = 3;
+      if (r >= 0.75) level = 4;
+      if (r >= 1) level = 5;
+    }
+    const isT = key === today() ? ' today' : '';
+    hmHtml += `<div class="history-cell l${level}${isT}" title="${key}: ${c.done}/${c.total} tasks">${d.getDate()}</div>`;
+  }
+  hm.innerHTML = hmHtml;
+
+  // History table (last 14 days)
+  let th = '';
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(today() + 'T12:00:00');
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    const c = getCompletionForDate(key);
+    if (c.done === 0 && i > 0) continue;
+    const doneTasks = tasks.filter(t => {
+      const ds = state[key] || {};
+      return ds[t.id];
+    }).map(t => t.label);
+    const pctClass = c.pct >= 75 ? 'pill-green' : c.pct >= 40 ? 'pill-amber' : c.pct > 0 ? 'pill-red' : '';
+    th += `<tr><td><strong>${key}</strong>${key===today()?' (today)':''}</td><td>${c.done}</td><td>${c.total}</td><td><span class="pill ${pctClass}">${c.pct}%</span></td><td style="font-size:12px;color:var(--text-secondary)">${doneTasks.length > 0 ? doneTasks.join(', ') : '<span style="color:var(--text-muted)">—</span>'}</td></tr>`;
+  }
+  $('task-history-body').innerHTML = th;
+}
+
+// ══════════ INIT ══════════
+$('sk-date').value = today();
+$('ad-date').value = today();
+$('sk-date').addEventListener('change', checkExisting);
+$('ad-date').addEventListener('change', checkExisting);
+checkExisting();
+rebuildAll();
+</script>
+</body>
+</html>
