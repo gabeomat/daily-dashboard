@@ -93,7 +93,7 @@ export function buildWhatLooksOff(
   return flags.length > 0 ? flags.join(". ") + "." : "Nothing flagged — metrics look consistent.";
 }
 
-function buildFocus(
+export function buildFocus(
   cur: DailyEntry | undefined,
   prev: DailyEntry | undefined,
   tasks: Task[]
