@@ -74,37 +74,45 @@ export function OverviewTab() {
           Strategic Snapshot — <span className="text-primary">{formatReportingDate(latestDate)}</span>
         </h3>
 
-        {/* CEO Notes Summary */}
-        {latestEntry && (latestEntry.biggest_win || latestEntry.biggest_bottleneck || latestEntry.real_priority) && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-            {latestEntry.biggest_win && (
-              <div className="bg-card/80 rounded-xl border-2 border-foreground/10 px-4 py-3">
-                <div className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground mb-1.5 flex items-center gap-1.5">
-                  <span>🏆</span> Biggest Win
+        {/* CEO Notes */}
+        <div className="mb-5">
+          <div className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground mb-2">📋 CEO Notes</div>
+          {latestEntry && (latestEntry.biggest_win || latestEntry.biggest_bottleneck || latestEntry.real_priority) ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {latestEntry.biggest_win && (
+                <div className="bg-card/80 rounded-xl border-2 border-foreground/10 px-4 py-3">
+                  <div className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                    <span>🏆</span> Biggest Win
+                  </div>
+                  <p className="text-sm leading-relaxed text-foreground">{latestEntry.biggest_win}</p>
                 </div>
-                <p className="text-sm leading-relaxed text-foreground">{latestEntry.biggest_win}</p>
-              </div>
-            )}
-            {latestEntry.biggest_bottleneck && (
-              <div className="bg-card/80 rounded-xl border-2 border-foreground/10 px-4 py-3">
-                <div className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground mb-1.5 flex items-center gap-1.5">
-                  <span>🧱</span> Bottleneck
+              )}
+              {latestEntry.biggest_bottleneck && (
+                <div className="bg-card/80 rounded-xl border-2 border-foreground/10 px-4 py-3">
+                  <div className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                    <span>🧱</span> Bottleneck
+                  </div>
+                  <p className="text-sm leading-relaxed text-foreground">{latestEntry.biggest_bottleneck}</p>
                 </div>
-                <p className="text-sm leading-relaxed text-foreground">{latestEntry.biggest_bottleneck}</p>
-              </div>
-            )}
-            {latestEntry.real_priority && (
-              <div className="bg-card/80 rounded-xl border-2 border-foreground/10 px-4 py-3">
-                <div className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground mb-1.5 flex items-center gap-1.5">
-                  <span>🎯</span> Real Priority
+              )}
+              {latestEntry.real_priority && (
+                <div className="bg-card/80 rounded-xl border-2 border-foreground/10 px-4 py-3">
+                  <div className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-muted-foreground mb-1.5 flex items-center gap-1.5">
+                    <span>🎯</span> Real Priority
+                  </div>
+                  <p className="text-sm leading-relaxed text-foreground">{latestEntry.real_priority}</p>
                 </div>
-                <p className="text-sm leading-relaxed text-foreground">{latestEntry.real_priority}</p>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">No CEO notes logged for this date.</p>
+          )}
+        </div>
 
-        {/* Signal Summary (inline) */}
+        {/* Divider */}
+        <div className="border-t-2 border-foreground/10 my-4" />
+
+        {/* Signal Summary */}
         <SignalSummary date={latestDate} daily={daily} tasks={tasksForDate} />
       </div>
 
