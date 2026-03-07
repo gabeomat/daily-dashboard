@@ -8,7 +8,7 @@ type Props = {
   tasks: Task[];
 };
 
-function getPrev(daily: DailyEntry[], date: string): DailyEntry | undefined {
+export function getPrev(daily: DailyEntry[], date: string): DailyEntry | undefined {
   const idx = daily.findIndex((d) => d.date === date);
   return idx > 0 ? daily[idx - 1] : undefined;
 }
