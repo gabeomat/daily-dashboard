@@ -17,7 +17,6 @@ export function SkoolTab() {
   const upsertNotes = useUpsertDailyEntry();
   const [date, setDate] = useState(yesterdayStr());
   const [form, setForm] = useState({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" });
-  const [form, setForm] = useState({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" });
   const [notesForm, setNotesForm] = useState({ biggest_win: "", biggest_bottleneck: "", real_priority: "" });
 
   const existing = daily.find((d) => d.date === date);
