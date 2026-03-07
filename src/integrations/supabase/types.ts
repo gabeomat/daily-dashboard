@@ -14,7 +14,117 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daily_entries: {
+        Row: {
+          created_at: string
+          date: string
+          discovery: number | null
+          group_activity: number | null
+          id: string
+          members: number | null
+          mrr: number | null
+          one_thing: string | null
+          profile_activity: number | null
+          retention: number | null
+          traffic: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          discovery?: number | null
+          group_activity?: number | null
+          id?: string
+          members?: number | null
+          mrr?: number | null
+          one_thing?: string | null
+          profile_activity?: number | null
+          retention?: number | null
+          traffic?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          discovery?: number | null
+          group_activity?: number | null
+          id?: string
+          members?: number | null
+          mrr?: number | null
+          one_thing?: string | null
+          profile_activity?: number | null
+          retention?: number | null
+          traffic?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      daily_metrics: {
+        Row: {
+          ad_spend: number | null
+          created_at: string
+          date: string
+          id: string
+          t18: number | null
+          t333: number | null
+          t47: number | null
+          updated_at: string
+        }
+        Insert: {
+          ad_spend?: number | null
+          created_at?: string
+          date: string
+          id?: string
+          t18?: number | null
+          t333?: number | null
+          t47?: number | null
+          updated_at?: string
+        }
+        Update: {
+          ad_spend?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          t18?: number | null
+          t333?: number | null
+          t47?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          category: string
+          created_at: string
+          date: string
+          id: string
+          is_completed: boolean
+          is_default: boolean
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          date: string
+          id?: string
+          is_completed?: boolean
+          is_default?: boolean
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          date?: string
+          id?: string
+          is_completed?: boolean
+          is_default?: boolean
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
