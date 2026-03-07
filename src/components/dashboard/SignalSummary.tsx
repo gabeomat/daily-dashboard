@@ -8,7 +8,7 @@ type Props = {
   tasks: Task[];
 };
 
-function getPrev(daily: DailyEntry[], date: string): DailyEntry | undefined {
+export function getPrev(daily: DailyEntry[], date: string): DailyEntry | undefined {
   const idx = daily.findIndex((d) => d.date === date);
   return idx > 0 ? daily[idx - 1] : undefined;
 }
@@ -18,7 +18,7 @@ function pctChange(cur: number, prev: number): number {
   return Math.round(((cur - prev) / prev) * 100);
 }
 
-function buildWhatChanged(cur: DailyEntry | undefined, prev: DailyEntry | undefined): string {
+export function buildWhatChanged(cur: DailyEntry | undefined, prev: DailyEntry | undefined): string {
   if (!cur) return "No data logged for this date yet.";
   if (!prev) return "First entry — no prior day to compare.";
 
@@ -48,7 +48,7 @@ function buildWhatChanged(cur: DailyEntry | undefined, prev: DailyEntry | undefi
   return changes.length > 0 ? changes.join(". ") + "." : "No significant day-over-day changes.";
 }
 
-function buildWhatLooksOff(
+export function buildWhatLooksOff(
   cur: DailyEntry | undefined,
   prev: DailyEntry | undefined,
   tasks: Task[],
@@ -93,7 +93,7 @@ function buildWhatLooksOff(
   return flags.length > 0 ? flags.join(". ") + "." : "Nothing flagged — metrics look consistent.";
 }
 
-function buildFocus(
+export function buildFocus(
   cur: DailyEntry | undefined,
   prev: DailyEntry | undefined,
   tasks: Task[]

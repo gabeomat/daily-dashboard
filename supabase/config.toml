@@ -1,1 +1,4 @@
 project_id = "dzfhhsroyegjvfeqgtjs"
+
+[functions.ai-strategist]
+verify_jwt = false

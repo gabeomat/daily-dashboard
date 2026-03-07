@@ -4,7 +4,8 @@ import { useTasksForDate } from "@/hooks/useTasks";
 import { GoalBar } from "./GoalBar";
 import { KpiCard } from "./KpiCard";
 import { ChartCard } from "./ChartCard";
-import { SignalSummary } from "./SignalSummary";
+import { SignalSummary, getPrev, buildWhatChanged, buildWhatLooksOff, buildFocus } from "./SignalSummary";
+import { AiStrategistCard } from "./AiStrategistCard";
 import { fmt, fmtD, shortDate, enrichAd, buildWeekly, yesterdayStr, formatReportingDate } from "@/lib/helpers";
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
@@ -29,6 +30,12 @@ export function OverviewTab() {
   const { data: tasksForDate = [] } = useTasksForDate(latestDate);
   const latestEntry = daily.find((d) => d.date === latestDate);
   const mrr = latest?.mrr || 0;
+
+  const prev = getPrev(daily, latestDate);
+  const recentEntries = daily.filter((d) => d.date <= latestDate).slice(-6);
+  const signalChanged = buildWhatChanged(latestEntry, prev);
+  const signalOff = buildWhatLooksOff(latestEntry, prev, tasksForDate, recentEntries);
+  const signalFocus = buildFocus(latestEntry, prev, tasksForDate);
 
   // Totals from ads
   const totals = metrics.reduce(
@@ -115,6 +122,15 @@ export function OverviewTab() {
         {/* Signal Summary */}
         <SignalSummary date={latestDate} daily={daily} tasks={tasksForDate} />
       </div>
+
+      <AiStrategistCard
+        date={latestDate}
+        daily={daily}
+        tasks={tasksForDate}
+        signalChanged={signalChanged}
+        signalOff={signalOff}
+        signalFocus={signalFocus}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <ChartCard title="MRR Trend">
