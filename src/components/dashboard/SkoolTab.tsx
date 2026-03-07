@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useDailyEntries, useUpsertDailyEntry } from "@/hooks/useDailyEntries";
-import { useTasksForDate } from "@/hooks/useTasks";
 import { KpiCard } from "./KpiCard";
 import { ChartCard } from "./ChartCard";
-import { SignalSummary } from "./SignalSummary";
 import { fmt, shortDate, yesterdayStr, formatReportingDate } from "@/lib/helpers";
 import { toast } from "sonner";
 import {
