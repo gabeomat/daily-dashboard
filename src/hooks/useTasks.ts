@@ -9,6 +9,7 @@ export type Task = {
   is_completed: boolean;
   is_default: boolean;
   sort_order: number;
+  weight: number;
 };
 
 export const DEFAULT_TASKS = [
