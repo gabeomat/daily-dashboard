@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       daily_entries: {
         Row: {
+          biggest_bottleneck: string
+          biggest_win: string
           created_at: string
           date: string
           discovery: number | null
@@ -25,11 +27,14 @@ export type Database = {
           mrr: number | null
           one_thing: string | null
           profile_activity: number | null
+          real_priority: string
           retention: number | null
           traffic: number | null
           updated_at: string
         }
         Insert: {
+          biggest_bottleneck?: string
+          biggest_win?: string
           created_at?: string
           date: string
           discovery?: number | null
@@ -39,11 +44,14 @@ export type Database = {
           mrr?: number | null
           one_thing?: string | null
           profile_activity?: number | null
+          real_priority?: string
           retention?: number | null
           traffic?: number | null
           updated_at?: string
         }
         Update: {
+          biggest_bottleneck?: string
+          biggest_win?: string
           created_at?: string
           date?: string
           discovery?: number | null
@@ -53,6 +61,7 @@ export type Database = {
           mrr?: number | null
           one_thing?: string | null
           profile_activity?: number | null
+          real_priority?: string
           retention?: number | null
           traffic?: number | null
           updated_at?: string
