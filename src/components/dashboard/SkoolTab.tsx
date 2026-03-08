@@ -82,9 +82,8 @@ export function SkoolTab() {
       real_priority: strVal(form.real_priority, existing?.real_priority),
     }, {
       onSuccess: () => {
-        toast.success(isEditing ? "Updated! Metrics saved for " + date : "Saved! Metrics logged for " + date);
-        setForm(emptyForm);
-        setIsEditing(false);
+        toast.success("Saved! Metrics logged for " + date);
+        setHasLoadedExisting(false);
       },
     });
   };
