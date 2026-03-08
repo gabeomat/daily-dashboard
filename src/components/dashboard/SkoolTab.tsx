@@ -136,11 +136,22 @@ export function SkoolTab() {
           </div>
         </div>
         <div className="flex gap-3 mt-4 items-center flex-wrap">
+          {existing && !isEditing && (
+            <button onClick={handleEdit} className="font-space font-extrabold uppercase tracking-[0.12em] text-sm px-4 py-2.5 bg-accent text-accent-foreground border-[3px] border-foreground rounded-full memphis-shadow-sm hover:opacity-90 transition-all cursor-pointer memphis-shadow-hover">
+              Edit Existing Data
+            </button>
+          )}
           <button onClick={handleSave} disabled={upsert.isPending} className="font-space font-extrabold uppercase tracking-[0.12em] text-sm px-4 py-2.5 bg-primary text-primary-foreground border-[3px] border-foreground rounded-full memphis-shadow-sm hover:bg-lav-500 transition-all cursor-pointer memphis-shadow-hover">
-            {upsert.isPending ? "Saving..." : "Save Skool Metrics"}
+            {upsert.isPending ? "Saving..." : isEditing ? "Save Changes" : "Save Skool Metrics"}
           </button>
+          {isEditing && (
+            <button onClick={() => { setIsEditing(false); setForm(emptyForm); }} className="font-space font-extrabold uppercase tracking-[0.12em] text-sm px-4 py-2.5 bg-card border-[3px] border-foreground rounded-full memphis-shadow-sm hover:bg-muted transition-all cursor-pointer">
+              Cancel
+            </button>
+          )}
         </div>
-        {existing && <p className="text-xs text-muted-foreground mt-2 italic font-semibold">Data exists for this date — saving will overwrite.</p>}
+        {existing && !isEditing && <p className="text-xs text-muted-foreground mt-2 italic font-semibold">Data exists for this date — click "Edit Existing Data" to update individual fields.</p>}
+        {isEditing && <p className="text-xs text-primary mt-2 italic font-semibold">Editing mode — change only the fields you need, then save.</p>}
       </div>
 
 
