@@ -18,34 +18,39 @@ export function SkoolTab() {
   const upsert = useUpsertDailyEntry();
   const [date, setDate] = useState(yesterdayStr());
   const [form, setForm] = useState(emptyForm);
-  const [isEditing, setIsEditing] = useState(false);
+  const [hasLoadedExisting, setHasLoadedExisting] = useState(false);
 
   const existing = daily.find((d) => d.date === date);
   const latest = daily[daily.length - 1];
 
-  // When switching dates, reset edit mode and clear form
+  // Auto-populate form when existing data is found for the selected date
   useEffect(() => {
-    setIsEditing(false);
+    if (existing && !hasLoadedExisting) {
+      setForm({
+        mrr: existing.mrr?.toString() || "",
+        retention: existing.retention?.toString() || "",
+        members: existing.members?.toString() || "",
+        traffic: existing.traffic?.toString() || "",
+        discovery: existing.discovery?.toString() || "",
+        profile_activity: existing.profile_activity?.toString() || "",
+        group_activity: existing.group_activity?.toString() || "",
+        one_thing: existing.one_thing || "",
+        biggest_win: existing.biggest_win || "",
+        biggest_bottleneck: existing.biggest_bottleneck || "",
+        real_priority: existing.real_priority || "",
+      });
+      setHasLoadedExisting(true);
+    } else if (!existing && hasLoadedExisting) {
+      setForm(emptyForm);
+      setHasLoadedExisting(false);
+    }
+  }, [existing, hasLoadedExisting]);
+
+  // Reset when date changes
+  useEffect(() => {
+    setHasLoadedExisting(false);
     setForm(emptyForm);
   }, [date]);
-
-  const handleEdit = () => {
-    if (!existing) return;
-    setIsEditing(true);
-    setForm({
-      mrr: existing.mrr?.toString() || "",
-      retention: existing.retention?.toString() || "",
-      members: existing.members?.toString() || "",
-      traffic: existing.traffic?.toString() || "",
-      discovery: existing.discovery?.toString() || "",
-      profile_activity: existing.profile_activity?.toString() || "",
-      group_activity: existing.group_activity?.toString() || "",
-      one_thing: existing.one_thing || "",
-      biggest_win: existing.biggest_win || "",
-      biggest_bottleneck: existing.biggest_bottleneck || "",
-      real_priority: existing.real_priority || "",
-    });
-  };
 
   const handleSave = () => {
     if (!date) { toast.error("Please select a date"); return; }
