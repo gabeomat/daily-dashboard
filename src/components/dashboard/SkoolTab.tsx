@@ -50,16 +50,15 @@ export function SkoolTab() {
   const handleSave = () => {
     if (!date) { toast.error("Please select a date"); return; }
 
-    // When editing, merge: use form value if provided, else keep existing
-    const base = isEditing && existing ? existing : null;
+    // Always merge with existing data — only override fields the user actually filled in
     const val = (formVal: string, existingVal: number | null | undefined, parser: (v: string) => number, fallback: number | null = 0) => {
       if (formVal !== "") return parser(formVal);
-      if (base) return existingVal ?? fallback;
+      if (existing) return existingVal ?? fallback;
       return fallback;
     };
     const strVal = (formVal: string, existingVal: string | null | undefined) => {
-      // For editing, always use current form value (it was pre-populated)
-      if (isEditing) return formVal;
+      if (formVal !== "") return formVal;
+      if (existing) return existingVal ?? "";
       return formVal;
     };
 
