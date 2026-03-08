@@ -50,32 +50,31 @@ export function SkoolTab() {
   const handleSave = () => {
     if (!date) { toast.error("Please select a date"); return; }
 
-    // When editing, merge: use form value if provided, else keep existing
-    const base = isEditing && existing ? existing : null;
+    // Always merge with existing data — only override fields the user actually filled in
     const val = (formVal: string, existingVal: number | null | undefined, parser: (v: string) => number, fallback: number | null = 0) => {
       if (formVal !== "") return parser(formVal);
-      if (base) return existingVal ?? fallback;
+      if (existing) return existingVal ?? fallback;
       return fallback;
     };
     const strVal = (formVal: string, existingVal: string | null | undefined) => {
-      // For editing, always use current form value (it was pre-populated)
-      if (isEditing) return formVal;
+      if (formVal !== "") return formVal;
+      if (existing) return existingVal ?? "";
       return formVal;
     };
 
     upsert.mutate({
       date,
-      mrr: val(form.mrr, base?.mrr, parseFloat, 0) as number,
-      retention: val(form.retention, base?.retention, parseFloat, 0) as number,
-      members: val(form.members, base?.members, parseInt, null) as number | null,
-      traffic: val(form.traffic, base?.traffic, parseInt, 0) as number,
-      discovery: val(form.discovery, base?.discovery, parseInt, 0) as number,
-      profile_activity: val(form.profile_activity, base?.profile_activity, parseInt, 0) as number,
-      group_activity: val(form.group_activity, base?.group_activity, parseInt, 0) as number,
-      one_thing: strVal(form.one_thing, base?.one_thing),
-      biggest_win: strVal(form.biggest_win, base?.biggest_win),
-      biggest_bottleneck: strVal(form.biggest_bottleneck, base?.biggest_bottleneck),
-      real_priority: strVal(form.real_priority, base?.real_priority),
+      mrr: val(form.mrr, existing?.mrr, parseFloat, 0) as number,
+      retention: val(form.retention, existing?.retention, parseFloat, 0) as number,
+      members: val(form.members, existing?.members, parseInt, null) as number | null,
+      traffic: val(form.traffic, existing?.traffic, parseInt, 0) as number,
+      discovery: val(form.discovery, existing?.discovery, parseInt, 0) as number,
+      profile_activity: val(form.profile_activity, existing?.profile_activity, parseInt, 0) as number,
+      group_activity: val(form.group_activity, existing?.group_activity, parseInt, 0) as number,
+      one_thing: strVal(form.one_thing, existing?.one_thing),
+      biggest_win: strVal(form.biggest_win, existing?.biggest_win),
+      biggest_bottleneck: strVal(form.biggest_bottleneck, existing?.biggest_bottleneck),
+      real_priority: strVal(form.real_priority, existing?.real_priority),
     }, {
       onSuccess: () => {
         toast.success(isEditing ? "Updated! Metrics saved for " + date : "Saved! Metrics logged for " + date);
