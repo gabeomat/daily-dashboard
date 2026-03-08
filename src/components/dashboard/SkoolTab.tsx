@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDailyEntries, useUpsertDailyEntry } from "@/hooks/useDailyEntries";
 import { KpiCard } from "./KpiCard";
 import { ChartCard } from "./ChartCard";
@@ -11,34 +11,76 @@ import {
 
 const COLORS = { accent: "#eb1495", blue: "#00bfff", green: "#00ccb1", amber: "#fedc01", purple: "#9250e2", teal: "#66ffeb" };
 
+const emptyForm = { mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" };
+
 export function SkoolTab() {
   const { data: daily = [] } = useDailyEntries();
   const upsert = useUpsertDailyEntry();
   const [date, setDate] = useState(yesterdayStr());
-  const [form, setForm] = useState({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" });
+  const [form, setForm] = useState(emptyForm);
+  const [isEditing, setIsEditing] = useState(false);
 
   const existing = daily.find((d) => d.date === date);
   const latest = daily[daily.length - 1];
 
+  // When switching dates, reset edit mode and clear form
+  useEffect(() => {
+    setIsEditing(false);
+    setForm(emptyForm);
+  }, [date]);
+
+  const handleEdit = () => {
+    if (!existing) return;
+    setIsEditing(true);
+    setForm({
+      mrr: existing.mrr?.toString() || "",
+      retention: existing.retention?.toString() || "",
+      members: existing.members?.toString() || "",
+      traffic: existing.traffic?.toString() || "",
+      discovery: existing.discovery?.toString() || "",
+      profile_activity: existing.profile_activity?.toString() || "",
+      group_activity: existing.group_activity?.toString() || "",
+      one_thing: existing.one_thing || "",
+      biggest_win: existing.biggest_win || "",
+      biggest_bottleneck: existing.biggest_bottleneck || "",
+      real_priority: existing.real_priority || "",
+    });
+  };
+
   const handleSave = () => {
     if (!date) { toast.error("Please select a date"); return; }
+
+    // When editing, merge: use form value if provided, else keep existing
+    const base = isEditing && existing ? existing : null;
+    const val = (formVal: string, existingVal: number | null | undefined, parser: (v: string) => number, fallback: number | null = 0) => {
+      if (formVal !== "") return parser(formVal);
+      if (base) return existingVal ?? fallback;
+      return fallback;
+    };
+    const strVal = (formVal: string, existingVal: string | null | undefined) => {
+      // For editing, always use current form value (it was pre-populated)
+      if (isEditing) return formVal;
+      return formVal;
+    };
+
     upsert.mutate({
       date,
-      mrr: parseFloat(form.mrr) || 0,
-      retention: parseFloat(form.retention) || 0,
-      members: parseInt(form.members) || null,
-      traffic: parseInt(form.traffic) || 0,
-      discovery: parseInt(form.discovery) || 0,
-      profile_activity: parseInt(form.profile_activity) || 0,
-      group_activity: parseInt(form.group_activity) || 0,
-      one_thing: form.one_thing,
-      biggest_win: form.biggest_win,
-      biggest_bottleneck: form.biggest_bottleneck,
-      real_priority: form.real_priority,
+      mrr: val(form.mrr, base?.mrr, parseFloat, 0) as number,
+      retention: val(form.retention, base?.retention, parseFloat, 0) as number,
+      members: val(form.members, base?.members, parseInt, null) as number | null,
+      traffic: val(form.traffic, base?.traffic, parseInt, 0) as number,
+      discovery: val(form.discovery, base?.discovery, parseInt, 0) as number,
+      profile_activity: val(form.profile_activity, base?.profile_activity, parseInt, 0) as number,
+      group_activity: val(form.group_activity, base?.group_activity, parseInt, 0) as number,
+      one_thing: strVal(form.one_thing, base?.one_thing),
+      biggest_win: strVal(form.biggest_win, base?.biggest_win),
+      biggest_bottleneck: strVal(form.biggest_bottleneck, base?.biggest_bottleneck),
+      real_priority: strVal(form.real_priority, base?.real_priority),
     }, {
       onSuccess: () => {
-        toast.success("Saved! Metrics logged for " + date);
-        setForm({ mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" });
+        toast.success(isEditing ? "Updated! Metrics saved for " + date : "Saved! Metrics logged for " + date);
+        setForm(emptyForm);
+        setIsEditing(false);
       },
     });
   };
@@ -94,11 +136,22 @@ export function SkoolTab() {
           </div>
         </div>
         <div className="flex gap-3 mt-4 items-center flex-wrap">
+          {existing && !isEditing && (
+            <button onClick={handleEdit} className="font-space font-extrabold uppercase tracking-[0.12em] text-sm px-4 py-2.5 bg-accent text-accent-foreground border-[3px] border-foreground rounded-full memphis-shadow-sm hover:opacity-90 transition-all cursor-pointer memphis-shadow-hover">
+              Edit Existing Data
+            </button>
+          )}
           <button onClick={handleSave} disabled={upsert.isPending} className="font-space font-extrabold uppercase tracking-[0.12em] text-sm px-4 py-2.5 bg-primary text-primary-foreground border-[3px] border-foreground rounded-full memphis-shadow-sm hover:bg-lav-500 transition-all cursor-pointer memphis-shadow-hover">
-            {upsert.isPending ? "Saving..." : "Save Skool Metrics"}
+            {upsert.isPending ? "Saving..." : isEditing ? "Save Changes" : "Save Skool Metrics"}
           </button>
+          {isEditing && (
+            <button onClick={() => { setIsEditing(false); setForm(emptyForm); }} className="font-space font-extrabold uppercase tracking-[0.12em] text-sm px-4 py-2.5 bg-card border-[3px] border-foreground rounded-full memphis-shadow-sm hover:bg-muted transition-all cursor-pointer">
+              Cancel
+            </button>
+          )}
         </div>
-        {existing && <p className="text-xs text-muted-foreground mt-2 italic font-semibold">Data exists for this date — saving will overwrite.</p>}
+        {existing && !isEditing && <p className="text-xs text-muted-foreground mt-2 italic font-semibold">Data exists for this date — click "Edit Existing Data" to update individual fields.</p>}
+        {isEditing && <p className="text-xs text-primary mt-2 italic font-semibold">Editing mode — change only the fields you need, then save.</p>}
       </div>
 
 
