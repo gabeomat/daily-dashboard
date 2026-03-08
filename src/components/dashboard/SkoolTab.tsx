@@ -138,6 +138,28 @@ export function SkoolTab() {
             <input type="text" placeholder="What's your #1 priority today?" value={form.one_thing} onChange={(e) => setForm({ ...form, one_thing: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground" />
           </div>
         </div>
+
+        {/* CEO Notes */}
+        <div className="mt-5 border-t-2 border-foreground/10 pt-5">
+          <h4 className="font-fredoka text-lg font-bold tracking-tight mb-3 flex items-center gap-2">
+            <span>📋</span> CEO Notes
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700">🏆 Biggest Win</label>
+              <textarea placeholder="What went well today?" value={form.biggest_win} onChange={(e) => setForm({ ...form, biggest_win: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground min-h-[80px] resize-y" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700">🧱 Biggest Bottleneck</label>
+              <textarea placeholder="What's blocking progress?" value={form.biggest_bottleneck} onChange={(e) => setForm({ ...form, biggest_bottleneck: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground min-h-[80px] resize-y" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700">🎯 Real Priority</label>
+              <textarea placeholder="What actually matters most right now?" value={form.real_priority} onChange={(e) => setForm({ ...form, real_priority: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground min-h-[80px] resize-y" />
+            </div>
+          </div>
+        </div>
+
         <div className="flex gap-3 mt-4 items-center flex-wrap">
           <button onClick={handleSave} disabled={upsert.isPending} className="font-space font-extrabold uppercase tracking-[0.12em] text-sm px-4 py-2.5 bg-primary text-primary-foreground border-[3px] border-foreground rounded-full memphis-shadow-sm hover:bg-lav-500 transition-all cursor-pointer memphis-shadow-hover">
             {upsert.isPending ? "Saving..." : existing ? "Update Metrics" : "Save Skool Metrics"}
