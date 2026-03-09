@@ -27,6 +27,17 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    // Fetch business context
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, supabaseKey);
+    const { data: ctxRow } = await sb
+      .from("business_context")
+      .select("value")
+      .eq("key", "business_profile")
+      .maybeSingle();
+    const bizContext = ctxRow?.value ? JSON.stringify(ctxRow.value, null, 2) : "No business context available.";
+
     const userPrompt = `Here is the dashboard data for ${payload.reportingDate}:
 
 NORTH STAR METRICS:
