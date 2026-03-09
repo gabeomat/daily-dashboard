@@ -62,6 +62,9 @@ CEO NOTES:
 RECENT TREND (last entries):
 ${payload.recentTrend || "No trend data available."}
 
+BUSINESS CONTEXT:
+${bizContext}
+
 Analyze this data and provide your strategic insight.`;
 
     const response = await fetch(
