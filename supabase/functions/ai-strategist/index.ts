@@ -7,13 +7,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are a concise business strategist for a solo-founder running a Skool community business. You analyze daily operational data and return actionable insights.
+const SYSTEM_PROMPT = `You are a concise business strategist for a solo-founder. You analyze daily operational data and return actionable insights.
 
 RULES:
 - Be concise, strategic, and practical. No fluff.
 - Never invent or assume data that isn't provided. If data is limited, say so.
 - Speak directly to the founder as "you."
 - Each section should be 1-2 sentences max.
+- Use the business context provided to make your insights specific and relevant to their actual business model, pricing, and goals.
 
 You MUST respond using the "strategic_insight" tool.`;
 
