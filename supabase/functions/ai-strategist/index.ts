@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,13 +7,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are a concise business strategist for a solo-founder running a Skool community business. You analyze daily operational data and return actionable insights.
+const SYSTEM_PROMPT = `You are a concise business strategist for a solo-founder. You analyze daily operational data and return actionable insights.
 
 RULES:
 - Be concise, strategic, and practical. No fluff.
 - Never invent or assume data that isn't provided. If data is limited, say so.
 - Speak directly to the founder as "you."
 - Each section should be 1-2 sentences max.
+- Use the business context provided to make your insights specific and relevant to their actual business model, pricing, and goals.
 
 You MUST respond using the "strategic_insight" tool.`;
 
@@ -24,6 +26,17 @@ serve(async (req) => {
     const { payload } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    // Fetch business context
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const sb = createClient(supabaseUrl, supabaseKey);
+    const { data: ctxRow } = await sb
+      .from("business_context")
+      .select("value")
+      .eq("key", "business_profile")
+      .maybeSingle();
+    const bizContext = ctxRow?.value ? JSON.stringify(ctxRow.value, null, 2) : "No business context available.";
 
     const userPrompt = `Here is the dashboard data for ${payload.reportingDate}:
 
@@ -48,6 +61,9 @@ CEO NOTES:
 
 RECENT TREND (last entries):
 ${payload.recentTrend || "No trend data available."}
+
+BUSINESS CONTEXT:
+${bizContext}
 
 Analyze this data and provide your strategic insight.`;
 
