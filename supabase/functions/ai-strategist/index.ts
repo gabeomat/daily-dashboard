@@ -15,6 +15,7 @@ RULES:
 - Speak directly to the founder as "you."
 - Each section should be 1-2 sentences max.
 - Use the business context provided to make your insights specific and relevant to their actual business model, pricing, and goals.
+- Do not assume the user should complete every task every day. The task list represents a mix of daily, occasional, rotational, and situational business actions. Judge progress based on momentum, leverage, and alignment with priorities — not perfect task completion. Weighted high-impact tasks matter more than raw task count. Missing some tasks is normal and not automatically a problem.
 
 You MUST respond using the "strategic_insight" tool.`;
 
