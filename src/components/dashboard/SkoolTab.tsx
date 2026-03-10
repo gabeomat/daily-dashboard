@@ -18,6 +18,7 @@ export function SkoolTab() {
   const upsert = useUpsertDailyEntry();
   const [date, setDate] = useState(yesterdayStr());
   const [form, setForm] = useState(emptyForm);
+  const [savedForm, setSavedForm] = useState(emptyForm);
   const [lastLoadedDate, setLastLoadedDate] = useState<string | null>(null);
 
   const existing = daily.find((d) => d.date === date);
@@ -45,12 +46,19 @@ export function SkoolTab() {
     if (key !== lastLoadedDate) {
       setLastLoadedDate(key);
       if (existing) {
-        setForm(formFromExisting(existing));
+        const loaded = formFromExisting(existing);
+        setForm(loaded);
+        setSavedForm(loaded);
       } else {
         setForm(emptyForm);
+        setSavedForm(emptyForm);
       }
     }
   }, [date, existingId]);
+
+  // Check if a field has been modified from the saved/loaded value
+  const isModified = (key: string) => (form as any)[key] !== (savedForm as any)[key];
+  const hasAnyChanges = Object.keys(emptyForm).some(isModified);
 
   const handleSave = () => {
     if (!date) { toast.error("Please select a date"); return; }
@@ -128,14 +136,20 @@ export function SkoolTab() {
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
           </div>
           {fields.map((f) => (
-            <div key={f.key} className="flex flex-col gap-1">
-              <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700">{f.label}</label>
-              <input type={f.type} placeholder={f.placeholder} value={(form as any)[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground" />
+            <div key={f.key} className="flex flex-col gap-1 relative">
+              <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700 flex items-center gap-1.5">
+                {f.label}
+                {isModified(f.key) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 border border-foreground/30" title="Unsaved change" />}
+              </label>
+              <input type={f.type} placeholder={f.placeholder} value={(form as any)[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className={`px-3 py-2.5 border-[3px] rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground ${isModified(f.key) ? "border-amber-400" : "border-foreground"}`} />
             </div>
           ))}
           <div className="flex flex-col gap-1 col-span-full">
-            <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700">One Thing (today's focus)</label>
-            <input type="text" placeholder="What's your #1 priority today?" value={form.one_thing} onChange={(e) => setForm({ ...form, one_thing: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground" />
+            <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700 flex items-center gap-1.5">
+              One Thing (today's focus)
+              {isModified("one_thing") && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 border border-foreground/30" title="Unsaved change" />}
+            </label>
+            <input type="text" placeholder="What's your #1 priority today?" value={form.one_thing} onChange={(e) => setForm({ ...form, one_thing: e.target.value })} className={`px-3 py-2.5 border-[3px] rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground ${isModified("one_thing") ? "border-amber-400" : "border-foreground"}`} />
           </div>
         </div>
 
@@ -145,18 +159,19 @@ export function SkoolTab() {
             <span>📋</span> CEO Notes
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700">🏆 Biggest Win</label>
-              <textarea placeholder="What went well today?" value={form.biggest_win} onChange={(e) => setForm({ ...form, biggest_win: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground min-h-[80px] resize-y" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700">🧱 Biggest Bottleneck</label>
-              <textarea placeholder="What's blocking progress?" value={form.biggest_bottleneck} onChange={(e) => setForm({ ...form, biggest_bottleneck: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground min-h-[80px] resize-y" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700">🎯 Real Priority</label>
-              <textarea placeholder="What actually matters most right now?" value={form.real_priority} onChange={(e) => setForm({ ...form, real_priority: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground min-h-[80px] resize-y" />
-            </div>
+            {([
+              { key: "biggest_win", label: "🏆 Biggest Win", placeholder: "What went well today?" },
+              { key: "biggest_bottleneck", label: "🧱 Biggest Bottleneck", placeholder: "What's blocking progress?" },
+              { key: "real_priority", label: "🎯 Real Priority", placeholder: "What actually matters most right now?" },
+            ] as const).map((note) => (
+              <div key={note.key} className="flex flex-col gap-1">
+                <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700 flex items-center gap-1.5">
+                  {note.label}
+                  {isModified(note.key) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 border border-foreground/30" title="Unsaved change" />}
+                </label>
+                <textarea placeholder={note.placeholder} value={(form as any)[note.key]} onChange={(e) => setForm({ ...form, [note.key]: e.target.value })} className={`px-3 py-2.5 border-[3px] rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground min-h-[80px] resize-y ${isModified(note.key) ? "border-amber-400" : "border-foreground"}`} />
+              </div>
+            ))}
           </div>
         </div>
 
@@ -164,8 +179,14 @@ export function SkoolTab() {
           <button onClick={handleSave} disabled={upsert.isPending} className="font-space font-extrabold uppercase tracking-[0.12em] text-sm px-4 py-2.5 bg-primary text-primary-foreground border-[3px] border-foreground rounded-full memphis-shadow-sm hover:bg-lav-500 transition-all cursor-pointer memphis-shadow-hover">
             {upsert.isPending ? "Saving..." : existing ? "Update Metrics" : "Save Skool Metrics"}
           </button>
+          {hasAnyChanges && (
+            <span className="flex items-center gap-1.5 text-xs font-space font-bold text-amber-600">
+              <span className="w-2 h-2 rounded-full bg-amber-400 border border-foreground/30 animate-pulse" />
+              Unsaved changes
+            </span>
+          )}
         </div>
-        {existing && <p className="text-xs text-muted-foreground mt-2 italic font-semibold">Data loaded for this date — edit any field and save.</p>}
+        {existing && !hasAnyChanges && <p className="text-xs text-muted-foreground mt-2 italic font-semibold">Data loaded for this date — edit any field and save.</p>}
       </div>
 
 
