@@ -83,7 +83,7 @@ export function SkoolTab() {
     }, {
       onSuccess: () => {
         toast.success("Saved! Metrics logged for " + date);
-        setHasLoadedExisting(false);
+        setLastLoadedDate(null); // Force re-populate from refetched data
       },
     });
   };
