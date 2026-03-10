@@ -18,6 +18,7 @@ export function SkoolTab() {
   const upsert = useUpsertDailyEntry();
   const [date, setDate] = useState(yesterdayStr());
   const [form, setForm] = useState(emptyForm);
+  const [savedForm, setSavedForm] = useState(emptyForm);
   const [lastLoadedDate, setLastLoadedDate] = useState<string | null>(null);
 
   const existing = daily.find((d) => d.date === date);
@@ -45,12 +46,19 @@ export function SkoolTab() {
     if (key !== lastLoadedDate) {
       setLastLoadedDate(key);
       if (existing) {
-        setForm(formFromExisting(existing));
+        const loaded = formFromExisting(existing);
+        setForm(loaded);
+        setSavedForm(loaded);
       } else {
         setForm(emptyForm);
+        setSavedForm(emptyForm);
       }
     }
   }, [date, existingId]);
+
+  // Check if a field has been modified from the saved/loaded value
+  const isModified = (key: string) => (form as any)[key] !== (savedForm as any)[key];
+  const hasAnyChanges = Object.keys(emptyForm).some(isModified);
 
   const handleSave = () => {
     if (!date) { toast.error("Please select a date"); return; }
