@@ -136,9 +136,12 @@ export function SkoolTab() {
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
           </div>
           {fields.map((f) => (
-            <div key={f.key} className="flex flex-col gap-1">
-              <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700">{f.label}</label>
-              <input type={f.type} placeholder={f.placeholder} value={(form as any)[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground" />
+            <div key={f.key} className="flex flex-col gap-1 relative">
+              <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700 flex items-center gap-1.5">
+                {f.label}
+                {isModified(f.key) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 border border-foreground/30" title="Unsaved change" />}
+              </label>
+              <input type={f.type} placeholder={f.placeholder} value={(form as any)[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className={`px-3 py-2.5 border-[3px] rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground ${isModified(f.key) ? "border-amber-400" : "border-foreground"}`} />
             </div>
           ))}
           <div className="flex flex-col gap-1 col-span-full">
