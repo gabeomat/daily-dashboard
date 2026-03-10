@@ -18,39 +18,39 @@ export function SkoolTab() {
   const upsert = useUpsertDailyEntry();
   const [date, setDate] = useState(yesterdayStr());
   const [form, setForm] = useState(emptyForm);
-  const [hasLoadedExisting, setHasLoadedExisting] = useState(false);
+  const [lastLoadedDate, setLastLoadedDate] = useState<string | null>(null);
 
   const existing = daily.find((d) => d.date === date);
   const latest = daily[daily.length - 1];
 
-  // Auto-populate form when existing data is found for the selected date
-  useEffect(() => {
-    if (existing && !hasLoadedExisting) {
-      setForm({
-        mrr: existing.mrr?.toString() || "",
-        retention: existing.retention?.toString() || "",
-        members: existing.members?.toString() || "",
-        traffic: existing.traffic?.toString() || "",
-        discovery: existing.discovery?.toString() || "",
-        profile_activity: existing.profile_activity?.toString() || "",
-        group_activity: existing.group_activity?.toString() || "",
-        one_thing: existing.one_thing || "",
-        biggest_win: existing.biggest_win || "",
-        biggest_bottleneck: existing.biggest_bottleneck || "",
-        real_priority: existing.real_priority || "",
-      });
-      setHasLoadedExisting(true);
-    } else if (!existing && hasLoadedExisting) {
-      setForm(emptyForm);
-      setHasLoadedExisting(false);
-    }
-  }, [existing, hasLoadedExisting]);
+  // Build form values from existing data helper
+  const formFromExisting = (entry: typeof existing) => ({
+    mrr: entry?.mrr != null ? entry.mrr.toString() : "",
+    retention: entry?.retention != null ? entry.retention.toString() : "",
+    members: entry?.members != null ? entry.members.toString() : "",
+    traffic: entry?.traffic != null ? entry.traffic.toString() : "",
+    discovery: entry?.discovery != null ? entry.discovery.toString() : "",
+    profile_activity: entry?.profile_activity != null ? entry.profile_activity.toString() : "",
+    group_activity: entry?.group_activity != null ? entry.group_activity.toString() : "",
+    one_thing: entry?.one_thing || "",
+    biggest_win: entry?.biggest_win || "",
+    biggest_bottleneck: entry?.biggest_bottleneck || "",
+    real_priority: entry?.real_priority || "",
+  });
 
-  // Reset when date changes
+  // Auto-populate form when date changes or existing data first loads for this date
+  const existingId = existing?.id ?? null;
   useEffect(() => {
-    setHasLoadedExisting(false);
-    setForm(emptyForm);
-  }, [date]);
+    const key = `${date}:${existingId}`;
+    if (key !== lastLoadedDate) {
+      setLastLoadedDate(key);
+      if (existing) {
+        setForm(formFromExisting(existing));
+      } else {
+        setForm(emptyForm);
+      }
+    }
+  }, [date, existingId]);
 
   const handleSave = () => {
     if (!date) { toast.error("Please select a date"); return; }
