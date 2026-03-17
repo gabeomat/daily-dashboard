@@ -51,6 +51,16 @@ export function SkoolTab() {
         const loaded = formFromExisting(existing);
         setForm(loaded);
         setSavedForm(loaded);
+      } else if (previousEntry) {
+        // Auto-populate from previous entry for new dates (carry-forward)
+        const carried = formFromExisting(previousEntry);
+        // Clear text fields for new day - only carry forward numbers
+        carried.one_thing = "";
+        carried.biggest_win = "";
+        carried.biggest_bottleneck = "";
+        carried.real_priority = "";
+        setForm(carried);
+        setSavedForm(emptyForm);
       } else {
         setForm(emptyForm);
         setSavedForm(emptyForm);
