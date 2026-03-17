@@ -286,7 +286,7 @@ export function SkoolTab() {
                 <tr key={d.date} className="hover:bg-aqua-100/40">
                   <td className="px-3 py-3 border-t-2 border-b-2 border-foreground first:border-l-2 first:rounded-l-xl last:border-r-2 last:rounded-r-xl bg-lav-50/50">{d.date}</td>
                   <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50">{fmt(d.mrr || 0)}</td>
-                  <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50">{d.retention}%</td>
+                  <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50">{d.retention != null ? `${d.retention}%` : "—"}</td>
                   <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50">{d.members || "—"}</td>
                   <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50">{d.traffic}</td>
                   <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50">{d.discovery}</td>
