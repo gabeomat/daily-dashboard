@@ -23,6 +23,8 @@ export function SkoolTab() {
 
   const existing = daily.find((d) => d.date === date);
   const latest = daily[daily.length - 1];
+  // Find the most recent entry before the selected date for carry-forward defaults
+  const previousEntry = [...daily].reverse().find((d) => d.date < date);
 
   // Build form values from existing data helper
   const formFromExisting = (entry: typeof existing) => ({
@@ -49,6 +51,16 @@ export function SkoolTab() {
         const loaded = formFromExisting(existing);
         setForm(loaded);
         setSavedForm(loaded);
+      } else if (previousEntry) {
+        // Auto-populate from previous entry for new dates (carry-forward)
+        const carried = formFromExisting(previousEntry);
+        // Clear text fields for new day - only carry forward numbers
+        carried.one_thing = "";
+        carried.biggest_win = "";
+        carried.biggest_bottleneck = "";
+        carried.real_priority = "";
+        setForm(carried);
+        setSavedForm(emptyForm);
       } else {
         setForm(emptyForm);
         setSavedForm(emptyForm);
@@ -64,10 +76,11 @@ export function SkoolTab() {
     if (!date) { toast.error("Please select a date"); return; }
 
     // Always merge with existing data — only override fields the user actually filled in
-    const val = (formVal: string, existingVal: number | null | undefined, parser: (v: string) => number, fallback: number | null = 0) => {
+    // Falls back to: existing value → previous entry value → fallback
+    const val = (formVal: string, existingVal: number | null | undefined, prevVal: number | null | undefined, parser: (v: string) => number, fallback: number | null = 0) => {
       if (formVal !== "") return parser(formVal);
-      if (existing) return existingVal ?? fallback;
-      return fallback;
+      if (existing) return existingVal ?? prevVal ?? fallback;
+      return prevVal ?? fallback;
     };
     const strVal = (formVal: string, existingVal: string | null | undefined) => {
       if (formVal !== "") return formVal;
@@ -77,13 +90,13 @@ export function SkoolTab() {
 
     upsert.mutate({
       date,
-      mrr: val(form.mrr, existing?.mrr, parseFloat, null) as number | null,
-      retention: val(form.retention, existing?.retention, parseFloat, null) as number | null,
-      members: val(form.members, existing?.members, parseInt, null) as number | null,
-      traffic: val(form.traffic, existing?.traffic, parseInt, null) as number | null,
-      discovery: val(form.discovery, existing?.discovery, parseInt, null) as number | null,
-      profile_activity: val(form.profile_activity, existing?.profile_activity, parseInt, null) as number | null,
-      group_activity: val(form.group_activity, existing?.group_activity, parseInt, null) as number | null,
+      mrr: val(form.mrr, existing?.mrr, previousEntry?.mrr, parseFloat, null) as number | null,
+      retention: val(form.retention, existing?.retention, previousEntry?.retention, parseFloat, null) as number | null,
+      members: val(form.members, existing?.members, previousEntry?.members, parseInt, null) as number | null,
+      traffic: val(form.traffic, existing?.traffic, previousEntry?.traffic, parseInt, null) as number | null,
+      discovery: val(form.discovery, existing?.discovery, previousEntry?.discovery, parseInt, null) as number | null,
+      profile_activity: val(form.profile_activity, existing?.profile_activity, previousEntry?.profile_activity, parseInt, null) as number | null,
+      group_activity: val(form.group_activity, existing?.group_activity, previousEntry?.group_activity, parseInt, null) as number | null,
       one_thing: strVal(form.one_thing, existing?.one_thing),
       biggest_win: strVal(form.biggest_win, existing?.biggest_win),
       biggest_bottleneck: strVal(form.biggest_bottleneck, existing?.biggest_bottleneck),
@@ -273,7 +286,7 @@ export function SkoolTab() {
                 <tr key={d.date} className="hover:bg-aqua-100/40">
                   <td className="px-3 py-3 border-t-2 border-b-2 border-foreground first:border-l-2 first:rounded-l-xl last:border-r-2 last:rounded-r-xl bg-lav-50/50">{d.date}</td>
                   <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50">{fmt(d.mrr || 0)}</td>
-                  <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50">{d.retention}%</td>
+                  <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50">{d.retention != null ? `${d.retention}%` : "—"}</td>
                   <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50">{d.members || "—"}</td>
                   <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50">{d.traffic}</td>
                   <td className="px-3 py-3 border-t-2 border-b-2 border-foreground bg-lav-50/50">{d.discovery}</td>
