@@ -66,10 +66,11 @@ export function SkoolTab() {
     if (!date) { toast.error("Please select a date"); return; }
 
     // Always merge with existing data — only override fields the user actually filled in
-    const val = (formVal: string, existingVal: number | null | undefined, parser: (v: string) => number, fallback: number | null = 0) => {
+    // Falls back to: existing value → previous entry value → fallback
+    const val = (formVal: string, existingVal: number | null | undefined, prevVal: number | null | undefined, parser: (v: string) => number, fallback: number | null = 0) => {
       if (formVal !== "") return parser(formVal);
-      if (existing) return existingVal ?? fallback;
-      return fallback;
+      if (existing) return existingVal ?? prevVal ?? fallback;
+      return prevVal ?? fallback;
     };
     const strVal = (formVal: string, existingVal: string | null | undefined) => {
       if (formVal !== "") return formVal;
