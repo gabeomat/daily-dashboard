@@ -23,6 +23,8 @@ export function SkoolTab() {
 
   const existing = daily.find((d) => d.date === date);
   const latest = daily[daily.length - 1];
+  // Find the most recent entry before the selected date for carry-forward defaults
+  const previousEntry = [...daily].reverse().find((d) => d.date < date);
 
   // Build form values from existing data helper
   const formFromExisting = (entry: typeof existing) => ({
