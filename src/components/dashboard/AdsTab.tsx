@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useDailyMetrics, useUpsertDailyMetric } from "@/hooks/useDailyMetrics";
+import { useEffect, useState } from "react";
+import { useDailyMetrics, useUpsertDailyMetric, type DailyMetric } from "@/hooks/useDailyMetrics";
 import { KpiCard } from "./KpiCard";
 import { ChartCard } from "./ChartCard";
 import { fmt, fmtD, shortDate, enrichAd, buildWeekly, yesterdayStr, formatReportingDate } from "@/lib/helpers";
@@ -10,26 +10,77 @@ import {
 } from "recharts";
 
 const COLORS = { accent: "#eb1495", blue: "#00bfff", green: "#00ccb1", amber: "#fedc01", purple: "#7624db" };
+const emptyForm = { ad_spend: "", t18: "", t47: "", t333: "" };
+
+const formFromMetric = (metric?: DailyMetric | null) => ({
+  ad_spend: metric?.ad_spend != null ? metric.ad_spend.toString() : "",
+  t18: metric?.t18 != null ? metric.t18.toString() : "",
+  t47: metric?.t47 != null ? metric.t47.toString() : "",
+  t333: metric?.t333 != null ? metric.t333.toString() : "",
+});
+
+const parseInteger = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  const parsed = parseInt(trimmed, 10);
+  return Number.isNaN(parsed) ? undefined : parsed;
+};
 
 export function AdsTab() {
   const { data: metrics = [] } = useDailyMetrics();
   const upsert = useUpsertDailyMetric();
   const [date, setDate] = useState(yesterdayStr());
-  const [form, setForm] = useState({ ad_spend: "", t18: "0", t47: "0", t333: "0" });
+  const [form, setForm] = useState(emptyForm);
   const [period, setPeriod] = useState("all");
+  const [lastLoadedKey, setLastLoadedKey] = useState<string | null>(null);
 
   const existing = metrics.find((d) => d.date === date);
+  const syncKey = existing
+    ? `${date}|existing|${JSON.stringify(formFromMetric(existing))}`
+    : `${date}|empty`;
+
+  useEffect(() => {
+    if (syncKey === lastLoadedKey) return;
+
+    setLastLoadedKey(syncKey);
+    setForm(existing ? formFromMetric(existing) : emptyForm);
+  }, [syncKey, lastLoadedKey, existing]);
 
   const handleSave = () => {
-    if (!date) { toast.error("Please select a date"); return; }
-    const spend = parseFloat(form.ad_spend);
-    if (isNaN(spend)) { toast.error("Please enter ad spend"); return; }
-    upsert.mutate({ date, ad_spend: spend, t18: parseInt(form.t18) || 0, t47: parseInt(form.t47) || 0, t333: parseInt(form.t333) || 0 }, {
-      onSuccess: () => {
-        toast.success("Saved! Ad metrics logged for " + date);
-        setForm({ ad_spend: "", t18: "0", t47: "0", t333: "0" });
+    if (!date) {
+      toast.error("Please select a date");
+      return;
+    }
+
+    const spendValue = form.ad_spend.trim();
+    const spend = spendValue ? parseFloat(spendValue) : undefined;
+
+    if (spend !== undefined && Number.isNaN(spend)) {
+      toast.error("Please enter valid ad spend");
+      return;
+    }
+
+    if (!existing && spend === undefined) {
+      toast.error("Please enter ad spend");
+      return;
+    }
+
+    upsert.mutate(
+      {
+        date,
+        ad_spend: spend,
+        t18: parseInteger(form.t18),
+        t47: parseInteger(form.t47),
+        t333: parseInteger(form.t333),
       },
-    });
+      {
+        onSuccess: (savedMetric) => {
+          toast.success("Saved! Ad metrics logged for " + savedMetric.date);
+          setForm(formFromMetric(savedMetric));
+        },
+      },
+    );
   };
 
   // Filter by period
@@ -53,8 +104,8 @@ export function AdsTab() {
   const cumulative = metrics.map((d) => {
     const e = enrichAd(d);
     cs += e.spend; cr += e.revenue;
-    return { date: shortDate(d.date), spend: Math.round(cs), revenue: cr };
-  });
+    return { date: shortDate(d.date), spend: Math.round(cs), revenue: cr };}
+  );
 
   const exportCSV = () => {
     let csv = "date,ad_spend,t18,t47,t333,revenue,total_conversions\n";
@@ -87,16 +138,16 @@ export function AdsTab() {
           ].map((f) => (
             <div key={f.key} className="flex flex-col gap-1">
               <label className="font-space text-[10px] font-extrabold uppercase tracking-[0.16em] text-lav-700">{f.label}</label>
-              <input type="number" placeholder={f.placeholder} value={(form as any)[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground" />
+              <input type="number" placeholder={f.placeholder} value={form[f.key as keyof typeof form]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className="px-3 py-2.5 border-[3px] border-foreground rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground" />
             </div>
           ))}
         </div>
         <div className="flex gap-3 mt-4 items-center flex-wrap">
           <button onClick={handleSave} disabled={upsert.isPending} className="font-space font-extrabold uppercase tracking-[0.12em] text-sm px-4 py-2.5 bg-primary text-primary-foreground border-[3px] border-foreground rounded-full memphis-shadow-sm hover:bg-lav-500 transition-all cursor-pointer memphis-shadow-hover">
-            {upsert.isPending ? "Saving..." : "Save Ad Metrics"}
+            {upsert.isPending ? "Saving..." : existing ? "Update Ad Metrics" : "Save Ad Metrics"}
           </button>
         </div>
-        {existing && <p className="text-xs text-muted-foreground mt-2 italic font-semibold">Data exists for this date — saving will overwrite.</p>}
+        {existing && <p className="text-xs text-muted-foreground mt-2 italic font-semibold">Saved values are loaded for this date — edit any single field and save without wiping the others.</p>}
       </div>
 
       {/* Period Filter */}

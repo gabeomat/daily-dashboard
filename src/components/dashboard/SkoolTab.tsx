@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useDailyEntries, useUpsertDailyEntry } from "@/hooks/useDailyEntries";
+import { useEffect, useState } from "react";
+import { useDailyEntries, useUpsertDailyEntry, type DailyEntry } from "@/hooks/useDailyEntries";
 import { KpiCard } from "./KpiCard";
 import { ChartCard } from "./ChartCard";
 import { fmt, shortDate, yesterdayStr, formatReportingDate } from "@/lib/helpers";
@@ -13,6 +13,31 @@ const COLORS = { accent: "#eb1495", blue: "#00bfff", green: "#00ccb1", amber: "#
 
 const emptyForm = { mrr: "", retention: "", members: "", traffic: "", discovery: "", profile_activity: "", group_activity: "", one_thing: "", biggest_win: "", biggest_bottleneck: "", real_priority: "" };
 
+const formFromEntry = (entry?: DailyEntry | null) => ({
+  mrr: entry?.mrr != null ? entry.mrr.toString() : "",
+  retention: entry?.retention != null ? entry.retention.toString() : "",
+  members: entry?.members != null ? entry.members.toString() : "",
+  traffic: entry?.traffic != null ? entry.traffic.toString() : "",
+  discovery: entry?.discovery != null ? entry.discovery.toString() : "",
+  profile_activity: entry?.profile_activity != null ? entry.profile_activity.toString() : "",
+  group_activity: entry?.group_activity != null ? entry.group_activity.toString() : "",
+  one_thing: entry?.one_thing || "",
+  biggest_win: entry?.biggest_win || "",
+  biggest_bottleneck: entry?.biggest_bottleneck || "",
+  real_priority: entry?.real_priority || "",
+});
+
+const buildCarryForwardForm = (entry?: DailyEntry) => {
+  const carried = formFromEntry(entry);
+  return {
+    ...carried,
+    one_thing: "",
+    biggest_win: "",
+    biggest_bottleneck: "",
+    real_priority: "",
+  };
+};
+
 export function SkoolTab() {
   const { data: daily = [] } = useDailyEntries();
   const upsert = useUpsertDailyEntry();
@@ -23,60 +48,42 @@ export function SkoolTab() {
 
   const existing = daily.find((d) => d.date === date);
   const latest = daily[daily.length - 1];
-  // Find the most recent entry before the selected date for carry-forward defaults
   const previousEntry = [...daily].reverse().find((d) => d.date < date);
+  const carryForwardForm = buildCarryForwardForm(previousEntry);
+  const syncKey = existing
+    ? `${date}|existing|${JSON.stringify(formFromEntry(existing))}`
+    : previousEntry
+      ? `${date}|carry|${JSON.stringify(carryForwardForm)}`
+      : `${date}|empty`;
 
-  // Build form values from existing data helper
-  const formFromExisting = (entry: typeof existing) => ({
-    mrr: entry?.mrr != null ? entry.mrr.toString() : "",
-    retention: entry?.retention != null ? entry.retention.toString() : "",
-    members: entry?.members != null ? entry.members.toString() : "",
-    traffic: entry?.traffic != null ? entry.traffic.toString() : "",
-    discovery: entry?.discovery != null ? entry.discovery.toString() : "",
-    profile_activity: entry?.profile_activity != null ? entry.profile_activity.toString() : "",
-    group_activity: entry?.group_activity != null ? entry.group_activity.toString() : "",
-    one_thing: entry?.one_thing || "",
-    biggest_win: entry?.biggest_win || "",
-    biggest_bottleneck: entry?.biggest_bottleneck || "",
-    real_priority: entry?.real_priority || "",
-  });
-
-  // Auto-populate form when date changes or existing data first loads for this date
-  const existingId = existing?.id ?? null;
   useEffect(() => {
-    const key = `${date}:${existingId}`;
-    if (key !== lastLoadedDate) {
-      setLastLoadedDate(key);
-      if (existing) {
-        const loaded = formFromExisting(existing);
-        setForm(loaded);
-        setSavedForm(loaded);
-      } else if (previousEntry) {
-        // Auto-populate from previous entry for new dates (carry-forward)
-        const carried = formFromExisting(previousEntry);
-        // Clear text fields for new day - only carry forward numbers
-        carried.one_thing = "";
-        carried.biggest_win = "";
-        carried.biggest_bottleneck = "";
-        carried.real_priority = "";
-        setForm(carried);
-        setSavedForm(emptyForm);
-      } else {
-        setForm(emptyForm);
-        setSavedForm(emptyForm);
-      }
-    }
-  }, [date, existingId]);
+    if (syncKey === lastLoadedDate) return;
 
-  // Check if a field has been modified from the saved/loaded value
-  const isModified = (key: string) => (form as any)[key] !== (savedForm as any)[key];
-  const hasAnyChanges = Object.keys(emptyForm).some(isModified);
+    setLastLoadedDate(syncKey);
+
+    if (existing) {
+      const loaded = formFromEntry(existing);
+      setForm(loaded);
+      setSavedForm(loaded);
+      return;
+    }
+
+    if (previousEntry) {
+      setForm(carryForwardForm);
+      setSavedForm(emptyForm);
+      return;
+    }
+
+    setForm(emptyForm);
+    setSavedForm(emptyForm);
+  }, [syncKey, lastLoadedDate, existing, previousEntry, carryForwardForm]);
+
+  const isModified = (key: keyof typeof emptyForm) => form[key] !== savedForm[key];
+  const hasAnyChanges = (Object.keys(emptyForm) as Array<keyof typeof emptyForm>).some(isModified);
 
   const handleSave = () => {
     if (!date) { toast.error("Please select a date"); return; }
 
-    // Always merge with existing data — only override fields the user actually filled in
-    // Falls back to: existing value → previous entry value → fallback
     const val = (formVal: string, existingVal: number | null | undefined, prevVal: number | null | undefined, parser: (v: string) => number, fallback: number | null = 0) => {
       if (formVal !== "") return parser(formVal);
       if (existing) return existingVal ?? prevVal ?? fallback;
@@ -92,19 +99,21 @@ export function SkoolTab() {
       date,
       mrr: val(form.mrr, existing?.mrr, previousEntry?.mrr, parseFloat, null) as number | null,
       retention: val(form.retention, existing?.retention, previousEntry?.retention, parseFloat, null) as number | null,
-      members: val(form.members, existing?.members, previousEntry?.members, parseInt, null) as number | null,
-      traffic: val(form.traffic, existing?.traffic, previousEntry?.traffic, parseInt, null) as number | null,
-      discovery: val(form.discovery, existing?.discovery, previousEntry?.discovery, parseInt, null) as number | null,
-      profile_activity: val(form.profile_activity, existing?.profile_activity, previousEntry?.profile_activity, parseInt, null) as number | null,
-      group_activity: val(form.group_activity, existing?.group_activity, previousEntry?.group_activity, parseInt, null) as number | null,
+      members: val(form.members, existing?.members, previousEntry?.members, (value) => parseInt(value, 10), null) as number | null,
+      traffic: val(form.traffic, existing?.traffic, previousEntry?.traffic, (value) => parseInt(value, 10), null) as number | null,
+      discovery: val(form.discovery, existing?.discovery, previousEntry?.discovery, (value) => parseInt(value, 10), null) as number | null,
+      profile_activity: val(form.profile_activity, existing?.profile_activity, previousEntry?.profile_activity, (value) => parseInt(value, 10), null) as number | null,
+      group_activity: val(form.group_activity, existing?.group_activity, previousEntry?.group_activity, (value) => parseInt(value, 10), null) as number | null,
       one_thing: strVal(form.one_thing, existing?.one_thing),
       biggest_win: strVal(form.biggest_win, existing?.biggest_win),
       biggest_bottleneck: strVal(form.biggest_bottleneck, existing?.biggest_bottleneck),
       real_priority: strVal(form.real_priority, existing?.real_priority),
     }, {
-      onSuccess: () => {
-        toast.success("Saved! Metrics logged for " + date);
-        setLastLoadedDate(null); // Force re-populate from refetched data
+      onSuccess: (savedEntry) => {
+        const loaded = formFromEntry(savedEntry);
+        toast.success("Saved! Metrics logged for " + savedEntry.date);
+        setForm(loaded);
+        setSavedForm(loaded);
       },
     });
   };
@@ -133,7 +142,7 @@ export function SkoolTab() {
     { key: "discovery", label: "Discovery", type: "number", placeholder: existing?.discovery?.toString() || "512" },
     { key: "profile_activity", label: "Profile Activity", type: "number", placeholder: existing?.profile_activity?.toString() || "22" },
     { key: "group_activity", label: "Group Activity", type: "number", placeholder: existing?.group_activity?.toString() || "84" },
-  ];
+  ] as const;
 
   return (
     <div>
@@ -154,7 +163,7 @@ export function SkoolTab() {
                 {f.label}
                 {isModified(f.key) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 border border-foreground/30" title="Unsaved change" />}
               </label>
-              <input type={f.type} placeholder={f.placeholder} value={(form as any)[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className={`px-3 py-2.5 border-[3px] rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground ${isModified(f.key) ? "border-amber-400" : "border-foreground"}`} />
+              <input type={f.type} placeholder={f.placeholder} value={form[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className={`px-3 py-2.5 border-[3px] rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground ${isModified(f.key) ? "border-amber-400" : "border-foreground"}`} />
             </div>
           ))}
           <div className="flex flex-col gap-1 col-span-full">
@@ -182,7 +191,7 @@ export function SkoolTab() {
                   {note.label}
                   {isModified(note.key) && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 border border-foreground/30" title="Unsaved change" />}
                 </label>
-                <textarea placeholder={note.placeholder} value={(form as any)[note.key]} onChange={(e) => setForm({ ...form, [note.key]: e.target.value })} className={`px-3 py-2.5 border-[3px] rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground min-h-[80px] resize-y ${isModified(note.key) ? "border-amber-400" : "border-foreground"}`} />
+                <textarea placeholder={note.placeholder} value={form[note.key]} onChange={(e) => setForm({ ...form, [note.key]: e.target.value })} className={`px-3 py-2.5 border-[3px] rounded-[14px] text-sm bg-card memphis-shadow-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground min-h-[80px] resize-y ${isModified(note.key) ? "border-amber-400" : "border-foreground"}`} />
               </div>
             ))}
           </div>
