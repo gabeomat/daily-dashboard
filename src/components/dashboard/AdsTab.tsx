@@ -237,7 +237,7 @@ export function AdsTab() {
           <table className="w-full text-sm">
             <thead>
               <tr>
-                {["Week", "Spend", "Revenue", "ROAS", "Conversions", "$18", "$47", "$333", "CAC"].map((h) => (
+                {["Week", "Spend", "Revenue", "ROAS", "Conversions", "$27", "$47", "$333", "CAC"].map((h) => (
                   <th key={h} className="text-left px-3 py-3 font-space font-extrabold text-[10px] uppercase tracking-[0.18em] text-lav-700 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
