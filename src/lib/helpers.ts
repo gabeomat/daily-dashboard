@@ -26,12 +26,22 @@ export function formatReportingDate(dateStr: string) {
   return d.toLocaleDateString("en-US", { month: "long", day: "numeric" });
 }
 
-export function enrichAd(d: { ad_spend: number | null; t18: number | null; t47: number | null; t333: number | null }) {
+const PRICE_CHANGE_DATE = "2026-03-21";
+const T18_OLD_PRICE = 18;
+const T18_NEW_PRICE = 27;
+
+export function getT18Price(date?: string) {
+  if (!date) return T18_NEW_PRICE;
+  return date >= PRICE_CHANGE_DATE ? T18_NEW_PRICE : T18_OLD_PRICE;
+}
+
+export function enrichAd(d: { date?: string; ad_spend: number | null; t18: number | null; t47: number | null; t333: number | null }) {
   const spend = d.ad_spend || 0;
   const t18 = d.t18 || 0;
   const t47 = d.t47 || 0;
   const t333 = d.t333 || 0;
-  const revenue = t18 * 18 + t47 * 47 + t333 * 333;
+  const price = getT18Price(d.date);
+  const revenue = t18 * price + t47 * 47 + t333 * 333;
   const conversions = t18 + t47 + t333;
   return { spend, t18, t47, t333, revenue, conversions };
 }
