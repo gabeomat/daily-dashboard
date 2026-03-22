@@ -190,7 +190,7 @@ export function AdsTab() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="t18" name="$18" stackId="a" fill={COLORS.amber + "CC"} radius={[2, 2, 0, 0]} />
+              <Bar dataKey="t18" name="$27" stackId="a" fill={COLORS.amber + "CC"} radius={[2, 2, 0, 0]} />
               <Bar dataKey="t47" name="$47" stackId="a" fill={COLORS.accent + "CC"} radius={[2, 2, 0, 0]} />
               <Bar dataKey="t333" name="$333" stackId="a" fill={COLORS.green + "CC"} radius={[2, 2, 0, 0]} />
             </BarChart>
