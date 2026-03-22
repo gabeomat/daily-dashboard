@@ -132,7 +132,7 @@ export function AdsTab() {
           </div>
           {[
             { key: "ad_spend", label: "Ad Spend ($)", placeholder: "50.00" },
-            { key: "t18", label: "$18 Sales", placeholder: "0" },
+            { key: "t18", label: "$27 Sales", placeholder: "0" },
             { key: "t47", label: "$47 Sales", placeholder: "0" },
             { key: "t333", label: "$333 Sales", placeholder: "0" },
           ].map((f) => (
