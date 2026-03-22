@@ -108,7 +108,7 @@ export function AdsTab() {
   );
 
   const exportCSV = () => {
-    let csv = "date,ad_spend,t18,t47,t333,revenue,total_conversions\n";
+    let csv = "date,ad_spend,t27,t47,t333,revenue,total_conversions\n";
     metrics.forEach((d) => { const e = enrichAd(d); csv += `${d.date},${d.ad_spend},${d.t18},${d.t47},${d.t333},${e.revenue},${e.conversions}\n`; });
     const blob = new Blob([csv], { type: "text/csv" });
     const a = document.createElement("a");

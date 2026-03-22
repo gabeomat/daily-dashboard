@@ -56,7 +56,7 @@ export function OverviewTab() {
   const weekly = buildWeekly(metrics);
 
   const tierData = [
-    { name: `$18/mo (${totals.t18})`, value: totals.t18, color: COLORS.amber },
+    { name: `$27/mo (${totals.t18})`, value: totals.t18, color: COLORS.amber },
     { name: `$47/mo (${totals.t47})`, value: totals.t47, color: COLORS.accent },
     { name: `$333/yr (${totals.t333})`, value: totals.t333, color: COLORS.green },
   ];
