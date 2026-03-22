@@ -108,7 +108,7 @@ export function AdsTab() {
   );
 
   const exportCSV = () => {
-    let csv = "date,ad_spend,t18,t47,t333,revenue,total_conversions\n";
+    let csv = "date,ad_spend,t27,t47,t333,revenue,total_conversions\n";
     metrics.forEach((d) => { const e = enrichAd(d); csv += `${d.date},${d.ad_spend},${d.t18},${d.t47},${d.t333},${e.revenue},${e.conversions}\n`; });
     const blob = new Blob([csv], { type: "text/csv" });
     const a = document.createElement("a");
@@ -132,7 +132,7 @@ export function AdsTab() {
           </div>
           {[
             { key: "ad_spend", label: "Ad Spend ($)", placeholder: "50.00" },
-            { key: "t18", label: "$18 Sales", placeholder: "0" },
+            { key: "t18", label: "$27 Sales", placeholder: "0" },
             { key: "t47", label: "$47 Sales", placeholder: "0" },
             { key: "t333", label: "$333 Sales", placeholder: "0" },
           ].map((f) => (
@@ -190,7 +190,7 @@ export function AdsTab() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="t18" name="$18" stackId="a" fill={COLORS.amber + "CC"} radius={[2, 2, 0, 0]} />
+              <Bar dataKey="t18" name="$27" stackId="a" fill={COLORS.amber + "CC"} radius={[2, 2, 0, 0]} />
               <Bar dataKey="t47" name="$47" stackId="a" fill={COLORS.accent + "CC"} radius={[2, 2, 0, 0]} />
               <Bar dataKey="t333" name="$333" stackId="a" fill={COLORS.green + "CC"} radius={[2, 2, 0, 0]} />
             </BarChart>
@@ -237,7 +237,7 @@ export function AdsTab() {
           <table className="w-full text-sm">
             <thead>
               <tr>
-                {["Week", "Spend", "Revenue", "ROAS", "Conversions", "$18", "$47", "$333", "CAC"].map((h) => (
+                {["Week", "Spend", "Revenue", "ROAS", "Conversions", "$27", "$47", "$333", "CAC"].map((h) => (
                   <th key={h} className="text-left px-3 py-3 font-space font-extrabold text-[10px] uppercase tracking-[0.18em] text-lav-700 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
