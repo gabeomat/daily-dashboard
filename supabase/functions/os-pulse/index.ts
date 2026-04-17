@@ -12,14 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    // Auth check
-    const expectedKey = Deno.env.get("PULSE_API_KEY");
-    if (!expectedKey) {
-      return new Response(JSON.stringify({ error: "Server misconfigured: missing API key" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Auth check (TEMPORARY HARDCODED FOR DIAGNOSTIC)
+    const expectedKey = "fpPulse2026abc";
 
     const authHeader = req.headers.get("Authorization");
     const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
